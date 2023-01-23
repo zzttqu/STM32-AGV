@@ -3,9 +3,9 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-01-23 23:34:26
+ * @LastEditTime: 2023-01-23 23:43:23
  * @FilePath: \uart\Core\Src\main.c
- * @Description: �?个大学生的毕业设�?
+ * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
  */
 /* USER CODE END Header */
@@ -85,7 +85,7 @@ int fputc(int ch, FILE *f)
 
 // 要点选microlib
 /**
- * @description: 重定向printf到串口输�?
+ * @description: 重定向printf到串口输出
  * @param {int} ch
  * @param {FILE} *f
  * @return {*}
@@ -260,9 +260,9 @@ int main(void)
   HAL_UART_Transmit(&huart1, Tx_str1, sizeof(Tx_str1), 10000);
   // 用哪个串口，收什么东西，长度多少
   HAL_UART_Receive_IT(&huart1, &aRxBuffer, 1);
-  // 事先清除定时器中�?
+  // 事先清除定时器中断
   __HAL_TIM_CLEAR_IT(&htim2, TIM_IT_UPDATE);
-  // 定时�?2�?始计�?
+  // 一定要先开启定时器，可以在设置标志位计数
   HAL_TIM_Base_Start_IT(&htim2);
   /* USER CODE END 2 */
 
@@ -278,7 +278,6 @@ int main(void)
     {
       if (UARThandler(Uart1_RxBuff) == 0)
       {
-
         Uart1_RxFlag = 0; // 标志位清0
         Uart1_Rx_Cnt = 0; // 计数值清0
       };
