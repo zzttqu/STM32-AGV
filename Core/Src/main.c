@@ -1,19 +1,12 @@
 /* USER CODE BEGIN Header */
-/**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2023 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
+/*
+ * @Author: zzttqu
+ * @Date: 2023-01-14 17:14:44
+ * @LastEditors: zzttqu 1161085395@qq.com
+ * @LastEditTime: 2023-01-23 18:10:43
+ * @FilePath: \uart\Core\Src\main.c
+ * @Description: 一个大学生的毕业设计
+ * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -66,6 +59,11 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/**
+ * @description: 定时器回调函数
+ * @param {TIM_HandleTypeDef} *htim 定时器指针
+ * @return {*}
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM2)
@@ -73,7 +71,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
     PulesCount++;
   }
-  //__HAL_TIM_SET_AUTORELOAD(&htim2,100-1);
 }
 // 重定向printf到串口输出，只用标准库实现，不用microlib
 /* #if !MicroLib
@@ -96,12 +93,23 @@ int fputc(int ch, FILE *f)
  */
 
 // 要点选microlib
+/**
+ * @description: 重定向printf到串口输出
+ * @param {int} ch
+ * @param {FILE} *f
+ * @return {*}
+ */
 int fputc(int ch, FILE *f)
 {
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
   return ch;
 }
 
+/**
+ * @description: 处理串口输入
+ * @param {char} *f 字符串
+ * @return {*}
+ */
 int UARThandler(char *f)
 {
   if (Uart1_RxFlag != 0)
@@ -121,7 +129,12 @@ int UARThandler(char *f)
   return 0;
 }
 
-// 串口异步接收回调函数
+
+/**
+ * @description: 串口异步接收回调函数
+ * @param {UART_HandleTypeDef} *huart 串口地址
+ * @return {*}
+ */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1)
