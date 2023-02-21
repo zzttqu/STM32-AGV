@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-01-23 23:43:23
+ * @LastEditTime: 2023-02-21 19:55:17
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -181,7 +181,7 @@ int UARThandler(char *f)
     PulesCount = PulesCount / 2;
     printf("already output %d pulse\r\n", PulesCount); // 输出已发送的脉冲个数
     int jiaodu=PulesCount / XIFEN * 18;
-    printf("alread rotate %f jiaodu\r\n", jiaodu);
+    printf("alread rotate %d jiaodu\r\n", jiaodu);
     printf("now pulse rate is %d Hz\r\n", 1000000 / ((__HAL_TIM_GetAutoreload(&htim2) + 1) * 2)); // 当前脉冲频率
     PulesCount = 0;
     return 0;
@@ -214,8 +214,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     else
     {
       Uart1_RxBuff[Uart1_Rx_Cnt++] = aRxBuffer; // 接收数据转存
-      // 判断结束位也就是换行符！！！
-      if ((Uart1_RxBuff[Uart1_Rx_Cnt - 1] == 0x0A) && (Uart1_RxBuff[Uart1_Rx_Cnt - 2] == 0x0D))
+      // 判断结束位是EE
+      if ((Uart1_RxBuff[Uart1_Rx_Cnt - 1] == 0x45) && (Uart1_RxBuff[Uart1_Rx_Cnt - 2] == 0x45))
       {
         Uart1_RxFlag = 1; // 接收完全部数据就将标志位改为1
       }
