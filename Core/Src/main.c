@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-22 22:53:33
+ * @LastEditTime: 2023-02-23 01:08:30
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <dataTrans.h>
+#include <motor.c>
+#include <uart.c>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +56,7 @@ uint8_t cAlmStr[] = "数据溢出(大于256)\r\n";
 uint8_t pulseActivate = 0;
 uint8_t errorFlag = 0; // 错误变量
 Data_Transer data_transer;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,7 +107,7 @@ int fputc(int ch, FILE *f)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim->Instance == TIM2)
+  if (htim->Instance == TIM6)
   {
     if (pulseActivate)
     {
@@ -113,106 +116,22 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     }
   }
 }
-/**
- * @description: 处理串口输入
- * @param {char} *f 字符
- * @return {*}
- */
-int UARThandler(char *f)
+
+void data_generate()
 {
-  if (Uart1_RxFlag == 0)
-  {
-    return INPUTERROR;
-  }
-  char speed = f[0];
-  char direction = f[1];
-  __HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
-  HAL_TIM_Base_Start(&htim6);
-  pulseActivate = 1;
-  // 通过比较字符对应的信息调节脉冲的频率（通过调节计时器的reload值）
-  if (speed != NULL)
-  {
-    switch (speed)
-    {
-    case '1':
-      __HAL_TIM_SET_AUTORELOAD(&htim6, 49);
-      break;
-    case '2':
-      __HAL_TIM_SET_AUTORELOAD(&htim6, 249);
-      break;
-    case '3':
-      __HAL_TIM_SET_AUTORELOAD(&htim6, 499);
-      break;
-    case '0':
-      HAL_TIM_Base_Stop(&htim6);
-      pulseActivate = 0;
-      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
-      break;
-    default:
-      errorFlag = INPUTERROR; // 抛出异常
-      break;
-    }
-  }
-  if (direction != NULL)
-  {
-    switch (direction)
-    {
-    case 'f':
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
-      break;
-    case 'b':
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_SET);
-      break;
-    case 'l':
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_2, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1 | GPIO_PIN_3, GPIO_PIN_SET);
-      break;
-    case 'r':
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_2, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1 | GPIO_PIN_3, GPIO_PIN_RESET);
-      break;
-    default:
-      errorFlag = INPUTERROR; // 抛出异常
-      break;
-    }
-  }
-  //printf("Uart data %s \r\n", Uart1_RxBuff);
-  if (errorFlag == 0)
-  {
-    PulesCount = PulesCount / 2;
-    printf("already output %d pulse\r\n", PulesCount); // 输出已发送的脉冲个数
-    
-    //输出格式为SS两位x速度y速度z速度
-    int jiaodu=PulesCount / XIFEN * 18;
-    printf("alread rotate %d jiaodu\r\n", jiaodu);
-    printf("now pulse rate is %d Hz\r\n", 1000000 / ((__HAL_TIM_GetAutoreload(&htim6) + 1) * 2)); // 当前脉冲频率
-    PulesCount = 0;
-    return 0;
-  }
-  else
-  {
-    pulseActivate = 0;
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, GPIO_PIN_RESET);
-    return errorFlag;
-  }
-}
+  data_transer.Speed.Data_Header = 'S';
+  data_transer.Speed.Data_Tail = 'E';
 
-void data_generate(){
-  data_transer.Speed.Data_Header='S';
-  data_transer.Speed.Data_Tail='E';
-
-  //四轮计算速度计算三轴速度
-  //赋值到buffer中进行传输
-  data_transer.buffer[0]=data_transer.Speed.Data_Header;
-  data_transer.buffer[2]=data_transer.Speed.X_speed>>8;
-  data_transer.buffer[3]=data_transer.Speed.X_speed;
-  data_transer.buffer[4]=data_transer.Speed.Y_speed>>8;
-  data_transer.buffer[5]=data_transer.Speed.Y_speed;
-  data_transer.buffer[6]=data_transer.Speed.Z_speed>>8;
-  data_transer.buffer[7]=data_transer.Speed.Z_speed;
-  data_transer.buffer[8]=data_transer.Speed.Data_Tail;
+  // 四轮计算速度计算三轴速度
+  // 赋值到buffer中进行传输
+  data_transer.buffer[0] = data_transer.Speed.Data_Header;
+  data_transer.buffer[2] = data_transer.Speed.X_speed >> 8;
+  data_transer.buffer[3] = data_transer.Speed.X_speed;
+  data_transer.buffer[4] = data_transer.Speed.Y_speed >> 8;
+  data_transer.buffer[5] = data_transer.Speed.Y_speed;
+  data_transer.buffer[6] = data_transer.Speed.Z_speed >> 8;
+  data_transer.buffer[7] = data_transer.Speed.Z_speed;
+  data_transer.buffer[8] = data_transer.Speed.Data_Tail;
 }
 
 /**
@@ -246,9 +165,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -288,6 +207,10 @@ int main(void)
   __HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
   // 一定要先开启定时器，可以在设置标志位计数
   HAL_TIM_Base_Start_IT(&htim6);
+
+  float target_Speed[3] = {0, 0, 0}; // 上位机传送过来的XYZ速度
+  UARThandler(target_Speed);
+  Drive_Motor(target_Speed[0], target_Speed[1], target_Speed[2]);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -319,17 +242,17 @@ int main(void)
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -342,9 +265,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -361,9 +283,9 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -375,14 +297,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
