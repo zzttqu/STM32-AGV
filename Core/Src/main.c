@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-23 01:08:30
+ * @LastEditTime: 2023-02-23 13:56:50
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -19,9 +19,9 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <string.h>
-#include <dataTrans.h>
-#include <motor.c>
-#include <uart.c>
+#include "dataTrans.h"
+#include "motor.c"
+#include "uart.c"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,18 +45,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t Tx_str1[] = "Hello PC!\r\n";
-uint8_t Rx_str1[] = "";
-uint8_t aRxBuffer;            // 接收中断缓冲
-char Uart1_RxBuff[256] = {0}; // 接收缓冲
-uint8_t Uart1_Rx_Cnt = 0;     // 接收缓冲计数
-uint8_t Uart1_RxFlag = 0;     // 接收完成标志
 int PulesCount = 0;           // 记录输出脉冲数量
-uint8_t cAlmStr[] = "数据溢出(大于256)\r\n";
 uint8_t pulseActivate = 0;
 uint8_t errorFlag = 0; // 错误变量
-Data_Transer data_transer;
 
+float target_Speed[3] = {0, 0, 0}; // 上位机传送过来的XYZ速度
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,23 +110,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   }
 }
 
-void data_generate()
-{
-  data_transer.Speed.Data_Header = 'S';
-  data_transer.Speed.Data_Tail = 'E';
-
-  // 四轮计算速度计算三轴速度
-  // 赋值到buffer中进行传输
-  data_transer.buffer[0] = data_transer.Speed.Data_Header;
-  data_transer.buffer[2] = data_transer.Speed.X_speed >> 8;
-  data_transer.buffer[3] = data_transer.Speed.X_speed;
-  data_transer.buffer[4] = data_transer.Speed.Y_speed >> 8;
-  data_transer.buffer[5] = data_transer.Speed.Y_speed;
-  data_transer.buffer[6] = data_transer.Speed.Z_speed >> 8;
-  data_transer.buffer[7] = data_transer.Speed.Z_speed;
-  data_transer.buffer[8] = data_transer.Speed.Data_Tail;
+void HAL_SYSTICK_Callback(void){
+  
 }
-
 /**
  * @description: 串口异步接收回调函数
  * @param {UART_HandleTypeDef} *huart 串口地址
@@ -143,23 +122,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1)
   {
-    if (Uart1_Rx_Cnt >= 255) // 溢出判断
-    {
-      Uart1_Rx_Cnt = 0;
-      memset(Uart1_RxBuff, 0x00, sizeof(Uart1_RxBuff)); // 临时缓存区清空
-      errorFlag = UARTTOOLONG;                          // 抛出异常
-      HAL_UART_Transmit(&huart1, (uint8_t *)&cAlmStr, sizeof(cAlmStr), 0xFFFF);
-    }
-    else
-    {
-      Uart1_RxBuff[Uart1_Rx_Cnt++] = aRxBuffer; // 接收数据转存
-      // 判断结束位是EE
-      if ((Uart1_RxBuff[Uart1_Rx_Cnt - 1] == 0x45) && (Uart1_RxBuff[Uart1_Rx_Cnt - 2] == 0x45))
-      {
-        Uart1_RxFlag = 1; // 接收完全部数据就将标志位改为1
-      }
-    }
-    HAL_UART_Receive_IT(&huart1, (uint8_t *)&aRxBuffer, 1); // 再开启接收中断
+   Uart1_RxFlag=UART_Receive_Handler();
   }
 }
 /* USER CODE END 0 */
@@ -207,10 +170,9 @@ int main(void)
   __HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
   // 一定要先开启定时器，可以在设置标志位计数
   HAL_TIM_Base_Start_IT(&htim6);
-
-  float target_Speed[3] = {0, 0, 0}; // 上位机传送过来的XYZ速度
-  UARThandler(target_Speed);
-  Drive_Motor(target_Speed[0], target_Speed[1], target_Speed[2]);
+  //开启编码器计时器
+  HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -223,10 +185,10 @@ int main(void)
     /* USER CODE BEGIN 3 */
     if (Uart1_RxFlag == 1)
     {
-      if (UARThandler(Uart1_RxBuff) == 0)
+      if (UART_Receive_Handler() == 1)//完成一次串口接收中断
       {
         Uart1_RxFlag = 0; // 标志位清0
-        Uart1_Rx_Cnt = 0; // 计数值清0
+        Drive_Motor(speed_receiver.Speed.X_speed, target_Speed[1], target_Speed[2]);
       };
       if (errorFlag != 0)
       {
