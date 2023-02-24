@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-24 13:16:50
+ * @LastEditTime: 2023-02-24 14:08:11
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -34,8 +34,8 @@
 #define MicroLib 1
 #define INPUTERROR 1
 #define UARTTOOLONG 2
-#define XIFEN 800
-//细分800，步距角1.8°，一个脉冲是1.8/800
+#define XIFEN 1000
+//细分1000，1000个脉冲走一圈360°
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -61,27 +61,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-// 重定向printf到串口输出，只用标准库实现，不用microlib
-/* #if !MicroLib
-//关闭半主机模
-__asm(".global __use_no_semihosting\n\t");
-//标准库需要的支持函数 给删
-FILE __stdout;
-//定义_sys_exit()以避免使用半主机模式
-void _sys_exit(int x)
-{
-  x = x;
-}
-//重定义fputc函数
-int fputc(int ch, FILE *f)
-{
-  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
-  return ch;
-}
-#endif
- */
-
 // 要点选microlib
 /**
  * @description: 重定向printf到串口输出
@@ -114,13 +93,14 @@ void HAL_SYSTICK_Callback(void)
   if (Sys_Count == 1000)
   {
     int encoder = Get_Encoder();
-    printf("tim3 output is %d tim4 output is %d tim5 output is%d\r\n", MOTORB.encoder,MOTORC.encoder,MOTORD.encoder);
+    printf("tim2 output is %d tim3 output is %d tim4 output is %d tim5 output is%d\r\n",MOTORA.encoder, MOTORB.encoder,MOTORC.encoder,MOTORD.encoder);
     // 2号定时器做编码器有问题
     // 3号可以
     // 4号行
     // 5号行
     // printf("tim3 output is %d direction: %d\r\n", encoder, DirectionA);
     Sys_Count = 0;
+    __HAL_TIM_SET_COUNTER(&htim2, 0);
     __HAL_TIM_SET_COUNTER(&htim3, 0);
     __HAL_TIM_SET_COUNTER(&htim4, 0);
     __HAL_TIM_SET_COUNTER(&htim5, 0);
@@ -187,6 +167,7 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
   /* USER CODE END 2 */
 
   /* Infinite loop */
