@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-24 14:08:11
+ * @LastEditTime: 2023-02-24 18:48:17
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -51,6 +51,8 @@ uint8_t pulseActivate = 0;
 uint8_t errorFlag = 0; // 错误变量
 int Sys_Count = 0;
 float target_Speed[3] = {0, 0, 0}; // 上位机传送过来的XYZ速度
+Speed_Receiver speed_receiver;
+Speed_Reporter speed_reporter;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,18 +94,15 @@ void HAL_SYSTICK_Callback(void)
   Sys_Count++;
   if (Sys_Count == 1000)
   {
-    int encoder = Get_Encoder();
-    printf("tim2 output is %d tim3 output is %d tim4 output is %d tim5 output is%d\r\n",MOTORA.encoder, MOTORB.encoder,MOTORC.encoder,MOTORD.encoder);
+    //printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
+    speed_reporter=Get_Encoder(speed_reporter);
+    //printf("tim2 output is %f tim3 output is %f tim4 output is %f tim5 output is%f\r\n",MOTORA.encoder, MOTORB.encoder,MOTORC.encoder,MOTORD.encoder);
     // 2号定时器做编码器有问题
     // 3号可以
     // 4号行
     // 5号行
-    // printf("tim3 output is %d direction: %d\r\n", encoder, DirectionA);
+    UART_Report_Handler(speed_reporter);
     Sys_Count = 0;
-    __HAL_TIM_SET_COUNTER(&htim2, 0);
-    __HAL_TIM_SET_COUNTER(&htim3, 0);
-    __HAL_TIM_SET_COUNTER(&htim4, 0);
-    __HAL_TIM_SET_COUNTER(&htim5, 0);
   }
 }
 /**
@@ -115,7 +114,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1)
   {
-    Uart1_RxFlag = UART_Receive_Handler();
+    speed_receiver = UART_Receive_Handler(speed_receiver);
   }
 }
 /* USER CODE END 0 */
@@ -168,6 +167,7 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+  __HAL_TIM_SET_AUTORELOAD(&htim6, 499);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -179,10 +179,10 @@ int main(void)
     /* USER CODE BEGIN 3 */
     if (Uart1_RxFlag == 1)
     {
-      if (UART_Receive_Handler() == 1) // 完成一次串口接收中断
+      if (UART_Receive_Handler(speed_receiver).Speed.X_speed != 0) // 完成一次串口接收中断
       {
         Uart1_RxFlag = 0; // 标志位清0
-        Drive_Motor(speed_receiver.Speed.X_speed, target_Speed[1], target_Speed[2]);
+        Drive_Motor(speed_receiver);
       };
       if (errorFlag != 0)
       {

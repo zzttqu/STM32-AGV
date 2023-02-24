@@ -1,3 +1,12 @@
+/*
+ * @Author: zzttqu
+ * @Date: 2023-02-22 23:51:28
+ * @LastEditors: zzttqu 1161085395@qq.com
+ * @LastEditTime: 2023-02-24 19:09:53
+ * @FilePath: \uart\Core\Src\uart.c
+ * @Description: 一个大学生的毕业设计
+ * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
+ */
 #include "usart.h"
 
 uint8_t Tx_str1[] = "Hello PC!\r\n";
@@ -9,8 +18,7 @@ char Uart1_RxBuff[256] = {0}; // 接收缓冲
 uint8_t Uart1_Rx_Cnt = 0;     // 接收缓冲计数
 uint8_t Uart1_RxFlag = 0;     // 接收完成标志
 uint8_t cAlmStr[] = "数据溢出(大于256)\r\n";
-Speed_Receiver speed_receiver;
-Speed_Reporter speed_reporter;
+
 
 
 /**
@@ -34,7 +42,7 @@ float XYZ_Target_Speed_transition(uint8_t High,uint8_t Low)
  * @param {float} *speed
  * @return {*}
  */
-int UART_Receive_Handler(void)
+Speed_Receiver UART_Receive_Handler(Speed_Receiver speed_receiver)
 {
     if (Uart1_Rx_Cnt >= 255) // 溢出判断
     {
@@ -64,21 +72,22 @@ int UART_Receive_Handler(void)
                 speed_receiver.Speed.Y_speed=XYZ_Target_Speed_transition(speed_receiver.buffer[3],speed_receiver.buffer[4]);
                 speed_receiver.Speed.Z_speed=XYZ_Target_Speed_transition(speed_receiver.buffer[5],speed_receiver.buffer[6]);
                 HAL_UART_Receive_IT(&huart1, (uint8_t *)&aRxBuffer, 1); // 再开启接收中断
-                return 1;
+                return speed_receiver;
             }
             
         }
     }
     HAL_UART_Receive_IT(&huart1, (uint8_t *)&aRxBuffer, 1); // 再开启接收中断
-    return 0;
+    memset(speed_receiver.buffer, 0x00, sizeof(speed_receiver.buffer)); 
+    return speed_receiver;
 }
 
 
 /**
- * @description: 四轮速度正向求解
+ * @description: 四轮速度发布
  * @return {*}
  */
-void UART_Report_Handler()
+void UART_Report_Handler(Speed_Reporter speed_reporter)
 {
   speed_reporter.Speed.Data_Header = 'S';
   speed_reporter.Speed.Data_Tail = 'E';
@@ -86,12 +95,15 @@ void UART_Report_Handler()
   // 四轮计算速度计算三轴速度
   // 赋值到buffer中进行传输
   speed_reporter.buffer[0] = speed_reporter.Speed.Data_Header;
-  speed_reporter.buffer[2] = speed_reporter.Speed.X_speed >> 8;
+  speed_reporter.buffer[2] = speed_reporter.Speed.X_speed >> 8;//只会截取低八位，所以高八位要右移放入
   speed_reporter.buffer[3] = speed_reporter.Speed.X_speed;
   speed_reporter.buffer[4] = speed_reporter.Speed.Y_speed >> 8;
   speed_reporter.buffer[5] = speed_reporter.Speed.Y_speed;
   speed_reporter.buffer[6] = speed_reporter.Speed.Z_speed >> 8;
   speed_reporter.buffer[7] = speed_reporter.Speed.Z_speed;
-  speed_reporter.buffer[8] = speed_reporter.Speed.Data_Tail;
+  speed_reporter.buffer[9] = speed_reporter.Speed.Data_Tail;
   HAL_UART_Transmit(&huart1,speed_reporter.buffer,sizeof(speed_reporter.buffer),1000);
+  short transition=((speed_reporter.buffer[2]<<8)+speed_reporter.buffer[3]); 
+  printf("%d ",speed_reporter.Speed.X_speed);
+  printf("%d",transition);
 }

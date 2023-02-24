@@ -13,7 +13,7 @@ typedef struct _Speed_Receiver_
 
 typedef struct _Speed_Reporter_
 {
-    unsigned char buffer[64];
+    unsigned char buffer[16];
     struct _Speed2_
     {
         unsigned char Data_Header;
