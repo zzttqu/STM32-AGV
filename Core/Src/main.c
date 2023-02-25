@@ -153,6 +153,9 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM5_Init();
   MX_TIM6_Init();
+  MX_TIM1_Init();
+  MX_TIM7_Init();
+  MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
   HAL_UART_Transmit(&huart1, Tx_str1, sizeof(Tx_str1), 10000);
