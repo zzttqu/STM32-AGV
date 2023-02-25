@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-25 16:46:20
+ * @LastEditTime: 2023-02-25 21:57:04
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -11,6 +11,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -31,9 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MicroLib 1
-#define INPUTERROR 1
-#define UARTTOOLONG 2
+#define UART1_RX_SIZE 128
 #define XIFEN 1000
 // 细分1000，1000个脉冲走一圈360°
 /* USER CODE END PD */
@@ -53,6 +52,7 @@ int Sys_Count = 0;
 float target_Speed[3] = {0, 0, 0}; // 上位机传送过来的XYZ速度
 Speed_Receiver speed_receiver;
 Speed_Reporter speed_reporter;
+extern uint8_t UART1_RX_BUF[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -72,7 +72,7 @@ void SystemClock_Config(void);
  */
 int fputc(int ch, FILE *f)
 {
-  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
+  HAL_UART_Transmit_DMA(&huart1, (uint8_t *)&ch, 1);
   return ch;
 }
 /**
@@ -95,23 +95,12 @@ void HAL_SYSTICK_Callback(void)
   if (Sys_Count == 1000)
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
-    speed_reporter = Get_Encoder(speed_reporter);
-    UART_Report_Handler(speed_reporter);
+    Get_Encoder();
+    UART_Report_Handler();
     Sys_Count = 0;
   }
 }
-/**
- * @description: 串口异步接收回调函数
- * @param {UART_HandleTypeDef} *huart 串口地址
- * @return {*}
- */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  if (huart->Instance == USART1)
-  {
-    speed_receiver = UART_Receive_Handler(speed_receiver);
-  }
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -142,6 +131,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_TIM3_Init();
   MX_TIM2_Init();
@@ -153,9 +143,12 @@ int main(void)
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
-  HAL_UART_Transmit(&huart1, Tx_str1, sizeof(Tx_str1), 10000);
+  // HAL_UART_Transmit_DMA(&huart1, Tx_str1, sizeof(Tx_str1));
   // 用哪个串口，收什么东西，长度多少
-  HAL_UART_Receive_IT(&huart1, &aRxBuffer, 1);
+  // HAL_UART_Receive_IT(&huart1, (uint8_t *)aRxBuffer, 1);
+  HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE);
+  // 使能idle中断
+  __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 事先清除定时器中断
   //__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
   // 一定要先开启定时器，可以在设置标志位计数
@@ -175,25 +168,19 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     if (Uart1_RxFlag == 1)
     {
-      if (UART_Receive_Handler(speed_receiver).Speed.X_speed != 0) // 完成一次串口接收中断
+      if (UART_Receive_Handler() != 0) // 完成一次串口接收中断
       {
         Uart1_RxFlag = 0; // 标志位清0
-        Drive_Motor(speed_receiver);
+        Drive_Motor();
       };
-      if (errorFlag != 0)
-      {
-        printf("error %d \r\n", errorFlag);
-        printf("Uart data %s \r\n", Uart1_RxBuff);
-        errorFlag = 0;
-      }
-      memset(Uart1_RxBuff, 0x00, 256);
+      memset(speed_receiver.buffer, 0x00, sizeof(speed_receiver.buffer));
     }
-    // HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }
