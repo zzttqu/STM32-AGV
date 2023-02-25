@@ -7,18 +7,7 @@
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
  */
-#define pai 3.14159
-#define wheel_r_mm 150
-#define encoder_num 1000
-#define wheel_center_x 250
-#define wheel_center_y 250
-typedef struct _Motor_Parameter_
-{
-  float target;
-  uint8_t direction_Target;
-  float encoder;
-  uint8_t direction_Now;
-} Motor_Parameter;
+#include "motor.h"
 extern Speed_Reporter speed_reporter;
 extern Speed_Receiver speed_receiver;
 Motor_Parameter MOTORA;

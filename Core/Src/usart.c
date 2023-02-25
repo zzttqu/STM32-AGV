@@ -1,31 +1,29 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    usart.c
-  * @brief   This file provides code for the configuration
-  *          of the USART instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    usart.c
+ * @brief   This file provides code for the configuration
+ *          of the USART instances.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-#include "dataTrans.h"
-uint8_t Uart1_RxFlag = 0;     // 接收完成标志
-uint8_t cAlmStr[] = "数据溢出(大于256)\r\n";
 extern Speed_Receiver speed_receiver;
 extern Speed_Reporter speed_reporter;
+uint8_t UART1_RX_BUF[64];
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -162,15 +160,60 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
 /* USER CODE BEGIN 1 */
 
-
 void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 {
-    if (huart == &huart1) // 判断是否为串口1产生中断
-    {
-        memcpy(speed_receiver.buffer, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
-        UART_Receive_Handler();
-        rxlen = 0;                                                  // 清除数据长度计数
-        HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 重新打开DMA接收
-    }
+  if (huart == &huart1) // 判断是否为串口1产生中断
+  {
+    memcpy(speed_receiver.buffer, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
+    UART_Receive_Handler();
+    rxlen = 0;                                                  // 清除数据长度计数
+    HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 重新打开DMA接收
+  }
 }
+
+int UART_Receive_Handler(void)
+{
+  if (speed_receiver.buffer[0] == Header) // 0x53
+  {
+    if (speed_receiver.buffer[7] == Tail) // 0x45
+    {
+      //Uart1_RxFlag = 1; // 接收完全部数据就将标志位改为1
+      speed_receiver.Speed.X_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[1], speed_receiver.buffer[2]);
+      speed_receiver.Speed.Y_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[3], speed_receiver.buffer[4]);
+      speed_receiver.Speed.Z_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[5], speed_receiver.buffer[6]);
+      printf("speeddata receiver complete");
+      return 1;
+    }
+  }
+  HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 再开启接收中断
+  return 0;
+}
+
+void UART_Report_Handler()
+{
+  speed_reporter.Speed.Data_Header = 'S';
+  speed_reporter.Speed.Data_Tail = 'E';
+
+  // 四轮计算速度计算三轴速度
+  // 赋值到buffer中进行传输
+  speed_reporter.buffer[0] = speed_reporter.Speed.Data_Header;
+  speed_reporter.buffer[2] = speed_reporter.Speed.X_speed >> 8; // 只会截取低八位，所以高八位要右移放入
+  speed_reporter.buffer[3] = speed_reporter.Speed.X_speed;
+  speed_reporter.buffer[4] = speed_reporter.Speed.Y_speed >> 8;
+  speed_reporter.buffer[5] = speed_reporter.Speed.Y_speed;
+  speed_reporter.buffer[6] = speed_reporter.Speed.Z_speed >> 8;
+  speed_reporter.buffer[7] = speed_reporter.Speed.Z_speed;
+  speed_reporter.buffer[9] = speed_reporter.Speed.Data_Tail;
+  HAL_UART_Transmit_DMA(&huart1, speed_reporter.buffer, sizeof(speed_reporter.buffer));
+}
+
+short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low)
+{
+  // 数据转换的中间变量
+  short transition;
+  // 将高8位和低8位整合成一个16位的short型数据
+  transition = ((High << 8) + Low);
+  return transition; // 接收单位是mm/s
+}
+
 /* USER CODE END 1 */
