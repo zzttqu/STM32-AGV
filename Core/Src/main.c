@@ -134,7 +134,8 @@ int main(void)
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
-  HAL_UART_Transmit_DMA(&huart1, "MCU Activated", sizeof("MCU Activated"));
+  char activate_text[]="MCU Activated";
+  HAL_UART_Transmit_DMA(&huart1, activate_text, sizeof(activate_text));
   // 用哪个串口，收什么东西，长度多少
   // HAL_UART_Receive_IT(&huart1, (uint8_t *)aRxBuffer, 1);
   HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE);
@@ -164,6 +165,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    //循环读取标志位
     if (UART1_Flag == 1)
     {
       Drive_Motor();

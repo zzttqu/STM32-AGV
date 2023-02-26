@@ -177,7 +177,6 @@ void UART_Receive_Handler(void)
   {
     if (speed_receiver.buffer[7] == Tail) // 0x45
     {
-      // Uart1_RxFlag = 1; // 接收完全部数据就将标志位改为1
       speed_receiver.Speed.X_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[1], speed_receiver.buffer[2]);
       speed_receiver.Speed.Y_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[3], speed_receiver.buffer[4]);
       speed_receiver.Speed.Z_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[5], speed_receiver.buffer[6]);
@@ -186,6 +185,7 @@ void UART_Receive_Handler(void)
       //接收完数据标志位
       UART1_Flag = 1;
       HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 再开启接收中断
+      return;
     }
   }
   HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 再开启接收中断
