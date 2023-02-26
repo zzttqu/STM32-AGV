@@ -44,7 +44,7 @@
 int Sys_Count = 0;
 Speed_Receiver speed_receiver = {0};
 Speed_Reporter speed_reporter = {0};
-extern uint8_t UART1_Flag = 0;
+extern uint8_t UART1_Flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
