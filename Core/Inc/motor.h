@@ -14,7 +14,11 @@ typedef struct _Motor_Parameter_
   uint8_t direction_Now;
 } Motor_Parameter;
 
+extern Motor_Parameter MOTORD;
+extern Motor_Parameter MOTORA;
+extern Motor_Parameter MOTORB;
+extern Motor_Parameter MOTORC;
+
 void Drive_Motor();
 
 void Get_Encoder();
-

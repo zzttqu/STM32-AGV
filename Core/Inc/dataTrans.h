@@ -4,9 +4,9 @@ typedef struct _Speed_Receiver_
     struct _Speed1_
     {
         unsigned char Data_Header;
-        float X_speed;
-        float Y_speed;
-        float Z_speed;
+        short X_speed;
+        short Y_speed;
+        short Z_speed;
         unsigned char Data_Tail;
     } Speed;
 } Speed_Receiver;

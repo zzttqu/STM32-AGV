@@ -39,6 +39,7 @@ extern UART_HandleTypeDef huart1;
 extern uint8_t UART1_RX_BUF[];  //串口接收缓存
 extern uint8_t UART1_RX_LEN;  //接收到的数据量
 extern uint8_t UART1_RX_Data[];  //数据缓存
+extern uint8_t UART1_Flag;
 #define UART1_RX_SIZE 128
 #define Header 'S'
 #define Tail 'E'
