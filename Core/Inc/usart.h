@@ -50,7 +50,7 @@ void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN Prototypes */
 void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen);
 short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low);
-int UART_Receive_Handler(void);
+void UART_Receive_Handler(void);
 void UART_Report_Handler(void);
 /* USER CODE END Prototypes */
 

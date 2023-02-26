@@ -166,7 +166,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    Drive_Motor();
+    if (UART1_Flag == 1)
+    {
+      Drive_Motor();
+    }
   }
   /* USER CODE END 3 */
 }
