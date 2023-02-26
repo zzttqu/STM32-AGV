@@ -24,7 +24,7 @@
 extern Speed_Receiver speed_receiver;
 extern Speed_Reporter speed_reporter;
 uint8_t UART1_RX_BUF[64];
-uint8_t UART1_Flag = 0;
+int UART1_Flag = 0;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;

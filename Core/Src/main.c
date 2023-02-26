@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-26 16:32:56
+ * @LastEditTime: 2023-02-26 16:56:29
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -28,9 +28,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define UART1_RX_SIZE 128
-#define XIFEN 1000
-// 细分1000，1000个脉冲走一圈360°
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -44,7 +42,7 @@
 int Sys_Count = 0;
 Speed_Receiver speed_receiver = {0};
 Speed_Reporter speed_reporter = {0};
-extern uint8_t UART1_Flag;
+extern int UART1_Flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -169,6 +167,7 @@ int main(void)
     if (UART1_Flag == 1)
     {
       Drive_Motor();
+      UART1_Flag = 0;
     }
   }
   /* USER CODE END 3 */
