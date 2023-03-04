@@ -1,3 +1,8 @@
+typedef union _uart_Float_
+{
+  float f_data;
+  uint8_t byte[4];
+} uart_Float;
 typedef struct _Speed_Receiver_
 {
     unsigned char buffer[64];
@@ -17,9 +22,9 @@ typedef struct _Speed_Reporter_
     struct _Speed2_
     {
         unsigned char Data_Header;
-        short X_speed;
-        short Y_speed;
-        short Z_speed;
+        uart_Float X_speed;
+        uart_Float Y_speed;
+        uart_Float Z_speed;
         unsigned char Data_Tail;
     } Speed;
 } Speed_Reporter;

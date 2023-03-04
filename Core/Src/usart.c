@@ -25,6 +25,7 @@ extern Speed_Receiver speed_receiver;
 extern Speed_Reporter speed_reporter;
 uint8_t UART1_RX_BUF[64];
 int UART1_Flag = 0;
+uart_Float u;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -199,14 +200,23 @@ void UART_Report_Handler()
   // 四轮计算速度计算三轴速度
   // 赋值到buffer中进行传输
   speed_reporter.buffer[0] = speed_reporter.Speed.Data_Header;
-  speed_reporter.buffer[2] = speed_reporter.Speed.X_speed >> 8; // 只会截取低八位，所以高八位要右移放入
-  speed_reporter.buffer[3] = speed_reporter.Speed.X_speed;
-  speed_reporter.buffer[4] = speed_reporter.Speed.Y_speed >> 8;
-  speed_reporter.buffer[5] = speed_reporter.Speed.Y_speed;
-  speed_reporter.buffer[6] = speed_reporter.Speed.Z_speed >> 8;
-  speed_reporter.buffer[7] = speed_reporter.Speed.Z_speed;
-  speed_reporter.buffer[9] = speed_reporter.Speed.Data_Tail;
-  printf("当前的速度为%d %d %d", speed_reporter.Speed.X_speed, speed_reporter.Speed.Y_speed, speed_reporter.Speed.Z_speed);
+  for (size_t i = 2; i < 14; i++)
+  {
+    if (i<6)
+    {
+     speed_reporter.buffer[i]=speed_reporter.Speed.X_speed.byte[(i-2)%4];
+    }
+    else if (5<i&&i<10)
+    {
+      speed_reporter.buffer[i]=speed_reporter.Speed.Y_speed.byte[(i-2)%4];
+    }
+    else if (9<i&&i<14)
+    {
+      speed_reporter.buffer[i]=speed_reporter.Speed.Z_speed.byte[(i-2)%4];
+    }
+  }
+  speed_reporter.buffer[14] = speed_reporter.Speed.Data_Tail;
+  printf("当前的速度为%f %f %f", speed_reporter.Speed.X_speed.f_data, speed_reporter.Speed.Y_speed.f_data, speed_reporter.Speed.Z_speed.f_data);
   HAL_UART_Transmit_DMA(&huart1, speed_reporter.buffer, sizeof(speed_reporter.buffer));
 }
 
