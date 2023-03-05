@@ -10,9 +10,10 @@ typedef struct _Motor_Parameter_
 {
   float target;
   int preloader;
-  TIM_HandleTypeDef htim;
+  TIM_HandleTypeDef htim_speed;
   uint8_t direction_Target;
   float encoder;
+  TIM_HandleTypeDef htim_encoder;
   uint8_t direction_Now;
 } Motor_Parameter;
 

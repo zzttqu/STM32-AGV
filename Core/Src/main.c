@@ -29,17 +29,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define MOTORA_SPEED HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4)
-#define MOTORA_FORWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET)
-#define MOTORA_BACKWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET)
 #define MOTORB_SPEED HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_4)
-#define MOTORB_FORWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5,GPIO_PIN_SET)
-#define MOTORB_BACKWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5,GPIO_PIN_RESET)
 #define MOTORC_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
-#define MOTORC_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1,GPIO_PIN_SET)
-#define MOTORC_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1,GPIO_PIN_RESET)
 #define MOTORD_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2)
-#define MOTORD_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10,GPIO_PIN_SET)
-#define MOTORD_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10,GPIO_PIN_RESET)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -157,7 +149,7 @@ int main(void)
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
-  char activate_text[]="MCU Activated";
+  uint8_t activate_text[]="MCU Activated";
   HAL_UART_Transmit_DMA(&huart1, activate_text, sizeof(activate_text));
   // 用哪个串口，收什么东西，长度多少
   // HAL_UART_Receive_IT(&huart1, (uint8_t *)aRxBuffer, 1);
