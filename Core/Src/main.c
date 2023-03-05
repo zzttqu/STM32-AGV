@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-02-26 16:56:29
+ * @LastEditTime: 2023-03-05 15:32:53
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -28,7 +28,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define MOTORA_SPEED HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4)
+#define MOTORA_FORWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_SET)
+#define MOTORA_BACKWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5,GPIO_PIN_RESET)
+#define MOTORB_SPEED HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_4)
+#define MOTORB_FORWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5,GPIO_PIN_SET)
+#define MOTORB_BACKWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5,GPIO_PIN_RESET)
+#define MOTORC_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
+#define MOTORC_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1,GPIO_PIN_SET)
+#define MOTORC_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1,GPIO_PIN_RESET)
+#define MOTORD_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2)
+#define MOTORD_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10,GPIO_PIN_SET)
+#define MOTORD_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10,GPIO_PIN_RESET)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -73,17 +84,29 @@ int fputc(int ch, FILE *f)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // 现在是2ms为一周期，1s输出500个脉冲
+  //轮速脉冲输出
   if (htim->Instance == TIM6)
-  {
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3);
+  {  
+    MOTORA_SPEED;
   }
+  if (htim->Instance == TIM7)
+  {
+    MOTORB_SPEED;
+  }
+  if (htim->Instance == TIM8)
+  {
+    MOTORC_SPEED;
+  }
+  if (htim->Instance == TIM1)
+  {
+    MOTORD_SPEED;
+  } 
 }
 
 void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
-  if (Sys_Count == 1000)
+  if (Sys_Count == 50)//每0.05s传输一次速度数据
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();

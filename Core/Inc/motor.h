@@ -9,6 +9,8 @@
 typedef struct _Motor_Parameter_
 {
   float target;
+  int preloader;
+  TIM_HandleTypeDef htim;
   uint8_t direction_Target;
   float encoder;
   uint8_t direction_Now;
