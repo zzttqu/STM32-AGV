@@ -2,24 +2,12 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-05 16:13:40
+ * @LastEditTime: 2023-03-05 16:20:01
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
  */
 #include "motor.h"
-
-#define MOTORA_FORWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET)
-#define MOTORA_BACKWARD HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET)
-
-#define MOTORB_FORWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET)
-#define MOTORB_BACKWARD HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET)
-
-#define MOTORC_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET)
-#define MOTORC_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_RESET)
-
-#define MOTORD_FORWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_SET)
-#define MOTORD_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET)
 
 extern Speed_Reporter speed_reporter;
 extern Speed_Receiver speed_receiver;
@@ -28,16 +16,22 @@ Motor_Parameter MOTORB;
 Motor_Parameter MOTORC;
 Motor_Parameter MOTORD; */
 Motor_Parameter MOTOR_Parameters[4];
-
+void Motor_Init()
+{
+  MOTOR_Parameters[0].htim_speed = htim6;
+  MOTOR_Parameters[0].htim_encoder = htim2;
+  MOTOR_Parameters[1].htim_speed = htim7;
+  MOTOR_Parameters[1].htim_encoder = htim3;
+  MOTOR_Parameters[2].htim_speed = htim8;
+  MOTOR_Parameters[2].htim_encoder = htim4;
+  MOTOR_Parameters[3].htim_speed = htim1;
+  MOTOR_Parameters[3].htim_encoder = htim5;
+}
 void Drive_Motor()
 {
   float tmp[4];
   // 车轮运动学逆解算
   // 转化为个轮子的线速度值，单位mm/s
-  MOTOR_Parameters[0].htim_speed = htim6;
-  MOTOR_Parameters[1].htim_speed = htim7;
-  MOTOR_Parameters[2].htim_speed = htim8;
-  MOTOR_Parameters[3].htim_speed = htim1;
   MOTOR_Parameters[0].target = speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed - speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
   MOTOR_Parameters[1].target = -speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed - speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
   MOTOR_Parameters[2].target = speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed + speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
@@ -88,28 +82,27 @@ void Get_Encoder()
     MOTOR_Parameters[i].encoder = __HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder) / 4;
   }
 
+  /*   MOTORA.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
+    MOTORB.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim3);
+    MOTORC.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim4);
+    MOTORD.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim5);
 
-/*   MOTORA.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
-  MOTORB.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim3);
-  MOTORC.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim4);
-  MOTORD.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim5);
+    MOTORA.encoder = __HAL_TIM_GET_COUNTER(&htim2) / 4;
+    MOTORB.encoder = __HAL_TIM_GET_COUNTER(&htim3) / 4;
+    MOTORC.encoder = __HAL_TIM_GET_COUNTER(&htim4) / 4;
+    MOTORD.encoder = __HAL_TIM_GET_COUNTER(&htim5) / 4;
 
-  MOTORA.encoder = __HAL_TIM_GET_COUNTER(&htim2) / 4;
-  MOTORB.encoder = __HAL_TIM_GET_COUNTER(&htim3) / 4;
-  MOTORC.encoder = __HAL_TIM_GET_COUNTER(&htim4) / 4;
-  MOTORD.encoder = __HAL_TIM_GET_COUNTER(&htim5) / 4;
-
-  __HAL_TIM_SET_COUNTER(&htim2, 0);
-  __HAL_TIM_SET_COUNTER(&htim3, 0);
-  __HAL_TIM_SET_COUNTER(&htim4, 0);
-  __HAL_TIM_SET_COUNTER(&htim5, 0); */
+    __HAL_TIM_SET_COUNTER(&htim2, 0);
+    __HAL_TIM_SET_COUNTER(&htim3, 0);
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_SET_COUNTER(&htim5, 0); */
 
   speed_reporter.Speed.Y_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (MOTORA.encoder + MOTORB.encoder + MOTORC.encoder + MOTORD.encoder) / 4);
+                                         (MOTOR_Parameters[0].encoder + MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4);
   speed_reporter.Speed.X_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (MOTORA.encoder - MOTORB.encoder + MOTORC.encoder - MOTORD.encoder) / 4);
+                                         (MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder - MOTOR_Parameters[3].encoder) / 4);
   speed_reporter.Speed.Z_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (-MOTORA.encoder - MOTORB.encoder + MOTORC.encoder + MOTORD.encoder) / 4 / (wheel_center_x + wheel_center_y));
+                                         (-MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4 / (wheel_center_x + wheel_center_y));
   for (size_t i = 0; i < 4; i++)
   {
     // 清零计数

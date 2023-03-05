@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-05 15:32:53
+ * @LastEditTime: 2023-03-05 16:23:06
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -46,6 +46,7 @@ int Sys_Count = 0;
 Speed_Receiver speed_receiver = {0};
 Speed_Reporter speed_reporter = {0};
 extern int UART1_Flag;
+extern Motor_Parameter MOTOR_Parameters[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,9 +77,9 @@ int fputc(int ch, FILE *f)
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  //轮速脉冲输出
+  // 轮速脉冲输出
   if (htim->Instance == TIM6)
-  {  
+  {
     MOTORA_SPEED;
   }
   if (htim->Instance == TIM7)
@@ -92,13 +93,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   if (htim->Instance == TIM1)
   {
     MOTORD_SPEED;
-  } 
+  }
 }
 
 void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
-  if (Sys_Count == 50)//每0.05s传输一次速度数据
+  if (Sys_Count == 50) // 每0.05s传输一次速度数据
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();
@@ -149,7 +150,7 @@ int main(void)
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
-  uint8_t activate_text[]="MCU Activated";
+  uint8_t activate_text[] = "MCU Activated";
   HAL_UART_Transmit_DMA(&huart1, activate_text, sizeof(activate_text));
   // 用哪个串口，收什么东西，长度多少
   // HAL_UART_Receive_IT(&huart1, (uint8_t *)aRxBuffer, 1);
@@ -159,8 +160,20 @@ int main(void)
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 事先清除定时器中断
   //__HAL_TIM_CLEAR_IT(&htim6, TIM_IT_UPDATE);
-  // 一定要先开启定时器，可以在设置标志位计数
-  HAL_TIM_Base_Start_IT(&htim6);
+
+  //  __HAL_TIM_SET_AUTORELOAD(&htim6, 499);
+  // 初始化电机所需定时器参数
+  Motor_Init();
+  
+  for (size_t i = 0; i < 4; i++)
+  {
+    // 开启脉冲定时器
+    HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);
+    // 开启编码器计时器
+    HAL_TIM_Encoder_Start(&MOTOR_Parameters[i].htim_encoder, TIM_CHANNEL_ALL);
+  }
+  
+/*   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
   HAL_TIM_Base_Start_IT(&htim8);
   HAL_TIM_Base_Start_IT(&htim1);
@@ -168,8 +181,7 @@ int main(void)
   HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
   HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
-  //  __HAL_TIM_SET_AUTORELOAD(&htim6, 499);
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL); */
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -180,7 +192,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    //循环读取标志位
+    // 循环读取标志位
     if (UART1_Flag == 1)
     {
       Drive_Motor();
