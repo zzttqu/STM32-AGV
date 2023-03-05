@@ -165,7 +165,7 @@ int main(void)
   // 初始化电机所需定时器参数
   Motor_Init();
   
-  for (size_t i = 0; i < 4; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
     // 开启脉冲定时器
     HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);

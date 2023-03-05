@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-05 16:20:01
+ * @LastEditTime: 2023-03-05 16:42:50
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -32,18 +32,18 @@ void Drive_Motor()
   float tmp[4];
   // 车轮运动学逆解算
   // 转化为个轮子的线速度值，单位mm/s
-  MOTOR_Parameters[0].target = speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed - speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[1].target = -speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed - speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[2].target = speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed + speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[3].target = -speed_receiver.Speed.X_speed + speed_receiver.Speed.Y_speed + speed_receiver.Speed.Z_speed * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[0].target = speed_receiver.X_speed + speed_receiver.Y_speed - speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[1].target = -speed_receiver.X_speed + speed_receiver.Y_speed - speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[2].target = speed_receiver.X_speed + speed_receiver.Y_speed + speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[3].target = -speed_receiver.X_speed + speed_receiver.Y_speed + speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
   // 先计算完需要计算的再赋值防止时间差
-  for (size_t i = 0; i < 4; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
     // 要先变为角速度值，再转化为preloader数值
     tmp[i] = (pai * wheel_r_mm * 1000 / MOTOR_Parameters[i].target - 1);
   }
 
-  for (size_t i = 0; i < 4; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
     // 取绝对值
     MOTOR_Parameters[i].preloader = (tmp[i] > 0) ? tmp[i] : -tmp[i];
@@ -58,7 +58,7 @@ void Drive_Motor()
   (MOTOR_Parameters[2].direction_Target > 0) ? MOTORC_FORWARD : MOTORC_BACKWARD;
   (MOTOR_Parameters[3].direction_Target > 0) ? MOTORD_FORWARD : MOTORD_BACKWARD;
 
-  /*   优化
+  /*  已优化
     MOTORA.target = (int)(pai * wheel_r_mm * 1000 / MOTORA.target - 1);
     MOTORB.target = (int)(pai * wheel_r_mm * 1000 / MOTORB.target - 1);
     MOTORC.target = (int)(pai * wheel_r_mm * 1000 / MOTORC.target - 1);
@@ -74,7 +74,7 @@ void Drive_Motor()
 
 void Get_Encoder()
 {
-  for (size_t i = 0; i < 4; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
     // 取是正转还是反转（已经废弃）?
     MOTOR_Parameters[i].direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
@@ -97,17 +97,17 @@ void Get_Encoder()
     __HAL_TIM_SET_COUNTER(&htim4, 0);
     __HAL_TIM_SET_COUNTER(&htim5, 0); */
 
-  speed_reporter.Speed.Y_speed.f_data = (pai * wheel_r_mm / encoder_num *
+  speed_reporter.Y_speed.f_data = (pai * wheel_r_mm / encoder_num *
                                          (MOTOR_Parameters[0].encoder + MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4);
-  speed_reporter.Speed.X_speed.f_data = (pai * wheel_r_mm / encoder_num *
+  speed_reporter.X_speed.f_data = (pai * wheel_r_mm / encoder_num *
                                          (MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder - MOTOR_Parameters[3].encoder) / 4);
-  speed_reporter.Speed.Z_speed.f_data = (pai * wheel_r_mm / encoder_num *
+  speed_reporter.Z_speed.f_data = (pai * wheel_r_mm / encoder_num *
                                          (-MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4 / (wheel_center_x + wheel_center_y));
-  for (size_t i = 0; i < 4; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
     // 清零计数
     __HAL_TIM_SET_COUNTER(&MOTOR_Parameters[i].htim_encoder, 0);
   }
   // printf("X_Speed is %d \r\n Y_Speed is %d \r\n Z_Speed is %d \r\n",
-  //        speed_reporter.Speed.Y_speed, speed_reporter.Speed.X_speed, speed_reporter.Speed.Z_speed);
+  //        speed_reporter.Y_speed, speed_reporter.X_speed, speed_reporter.Z_speed);
 }
