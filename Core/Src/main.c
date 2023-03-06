@@ -46,8 +46,9 @@
 int Sys_Count = 0;
 Speed_Receiver speed_receiver = {0};
 Speed_Reporter speed_reporter = {0};
-extern uint8_t UART1_Recieve_Flag;
+extern uint8_t UART1_Speed_Flag;
 extern uint8_t UART1_Report_Flag;
+extern uint8_t UART1_Setting_Flag;
 extern Motor_Parameter MOTOR_Parameters[];
 /* USER CODE END PV */
 
@@ -199,12 +200,17 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     // 循环读取标志位
-    if (UART1_Recieve_Flag == 1)
+    if (UART1_Speed_Flag == 1)
     {
       Drive_Motor();
-      UART1_Recieve_Flag = 0;
+      UART1_Speed_Flag = 0;
+    }
+    //喂看门狗
+    if (UART1_Setting_Flag||UART1_Speed_Flag)
+    {
       HAL_IWDG_Refresh(&hiwdg);
     }
+    
   }
   /* USER CODE END 3 */
 }

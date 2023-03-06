@@ -44,9 +44,9 @@ extern UART_HandleTypeDef huart1;
   extern uint8_t UART1_RX_BUF[];  // 串口接收缓存
   extern uint8_t UART1_RX_LEN;    // 接收到的数据量
   extern uint8_t UART1_RX_Data[]; // 数据缓存
-  extern uint8_t UART1_Recieve_Flag;
+  extern uint8_t UART1_Speed_Flag;
   extern uint8_t UART1_Report_Flag;
-
+  extern uint8_t UART1_Setting_Flag;
 /* USER CODE END Private defines */
 
 void MX_USART1_UART_Init(void);

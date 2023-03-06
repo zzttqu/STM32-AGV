@@ -24,7 +24,8 @@
 extern Speed_Receiver speed_receiver;
 extern Speed_Reporter speed_reporter;
 uint8_t UART1_RX_BUF[64];
-uint8_t UART1_Recieve_Flag = 0;
+uint8_t UART1_Speed_Flag = 0;
+uint8_t UART1_Setting_Flag = 0;
 uint8_t UART1_Report_Flag = 0;
 /* USER CODE END 0 */
 
@@ -191,6 +192,7 @@ void UART_Communicate_Init(void)
     default:
       break;
     }
+    UART1_Setting_Flag=1;
   }
 }
 
@@ -212,7 +214,7 @@ void UART_Receive_Handler(void)
       printf("收到的速度为%d %d %d", speed_receiver.X_speed, speed_receiver.Y_speed, speed_receiver.Z_speed);
       memset(speed_receiver.buffer, 0x00, sizeof(speed_receiver.buffer));
       // 接收完数据标志位
-      UART1_Recieve_Flag = 1;
+      UART1_Speed_Flag = 1;
     }
   }
 }
