@@ -17,7 +17,7 @@ typedef struct _Speed_Receiver_
 
 typedef struct _Speed_Reporter_
 {
-    unsigned char buffer[16];
+    unsigned char buffer[32];
 
     unsigned char Data_Header;
     uart_Float X_speed;
