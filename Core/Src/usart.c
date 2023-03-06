@@ -24,7 +24,10 @@
 extern Speed_Receiver speed_receiver;
 extern Speed_Reporter speed_reporter;
 uint8_t UART1_RX_BUF[64];
-int UART1_Flag = 0;
+uint8_t UART1_Recieve_Flag = 0;
+uint8_t UART1_Report_Flag = 0;
+uint8_t active_code = 'A';
+uint8_t deactive_code = 'B';
 uart_Float u;
 /* USER CODE END 0 */
 
@@ -166,9 +169,22 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
   if (huart == &huart1) // 判断是否为串口1产生中断
   {
     memcpy(speed_receiver.buffer, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
-    UART_Receive_Handler();
+    UART_Report_Init();
+      UART_Receive_Handler();
     rxlen = 0;                                                  // 清除数据长度计数
     HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 重新打开DMA接收
+  }
+}
+
+void UART_Report_Init(void)
+{
+  if (UART1_RX_BUF[0]==active_code)
+  {
+    UART1_Report_Flag = 1;
+  }
+  if (UART1_RX_BUF[0]==deactive_code)
+  {
+    UART1_Report_Flag = 0;
   }
 }
 
@@ -183,41 +199,43 @@ void UART_Receive_Handler(void)
       speed_receiver.Z_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[5], speed_receiver.buffer[6]);
       printf("收到的速度为%d %d %d", speed_receiver.X_speed, speed_receiver.Y_speed, speed_receiver.Z_speed);
       memset(speed_receiver.buffer, 0x00, sizeof(speed_receiver.buffer));
-      //接收完数据标志位
-      UART1_Flag = 1;
-      HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 再开启接收中断
+      // 接收完数据标志位
+      UART1_Recieve_Flag = 1;
       return;
     }
   }
-  HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 再开启接收中断
 }
 
 void UART_Report_Handler()
 {
   speed_reporter.Data_Header = 'S';
   speed_reporter.Data_Tail = 'E';
+  memset(speed_reporter.buffer, 0x00, sizeof(speed_reporter.buffer));
 
   // 四轮计算速度计算三轴速度
   // 赋值到buffer中进行传输
   speed_reporter.buffer[0] = speed_reporter.Data_Header;
   for (size_t i = 2; i < 14; i++)
   {
-    if (i<6)
+    if (i < 6)
     {
-     speed_reporter.buffer[i]=speed_reporter.X_speed.byte[(i-2)%4];
+      speed_reporter.buffer[i] = speed_reporter.X_speed.byte[(i - 2) % 4];
     }
-    else if (5<i&&i<10)
+    else if (5 < i && i < 10)
     {
-      speed_reporter.buffer[i]=speed_reporter.Y_speed.byte[(i-2)%4];
+      speed_reporter.buffer[i] = speed_reporter.Y_speed.byte[(i - 2) % 4];
     }
-    else if (9<i&&i<14)
+    else if (9 < i && i < 14)
     {
-      speed_reporter.buffer[i]=speed_reporter.Z_speed.byte[(i-2)%4];
+      speed_reporter.buffer[i] = speed_reporter.Z_speed.byte[(i - 2) % 4];
     }
   }
   speed_reporter.buffer[14] = speed_reporter.Data_Tail;
-  printf("当前的速度为%f %f %f", speed_reporter.X_speed.f_data, speed_reporter.Y_speed.f_data, speed_reporter.Z_speed.f_data);
+  // printf("当前的速度为%f %f %f", speed_reporter.X_speed.f_data, speed_reporter.Y_speed.f_data, speed_reporter.Z_speed.f_data);
+
   HAL_UART_Transmit_DMA(&huart1, speed_reporter.buffer, sizeof(speed_reporter.buffer));
+
+  
 }
 
 short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low)

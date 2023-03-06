@@ -39,7 +39,8 @@ extern UART_HandleTypeDef huart1;
 extern uint8_t UART1_RX_BUF[];  //串口接收缓存
 extern uint8_t UART1_RX_LEN;  //接收到的数据量
 extern uint8_t UART1_RX_Data[];  //数据缓存
-extern int UART1_Flag;
+extern uint8_t UART1_Recieve_Flag;
+extern uint8_t UART1_Report_Flag;
 #define UART1_RX_SIZE 128
 #define Header 'S'
 #define Tail 'E'
@@ -52,6 +53,7 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen);
 short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low);
 void UART_Receive_Handler(void);
 void UART_Report_Handler(void);
+void UART_Report_Init(void);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

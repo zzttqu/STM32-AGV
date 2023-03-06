@@ -45,7 +45,8 @@
 int Sys_Count = 0;
 Speed_Receiver speed_receiver = {0};
 Speed_Reporter speed_reporter = {0};
-extern int UART1_Flag;
+extern uint8_t UART1_Recieve_Flag;
+extern uint8_t UART1_Report_Flag;
 extern Motor_Parameter MOTOR_Parameters[];
 /* USER CODE END PV */
 
@@ -103,7 +104,10 @@ void HAL_SYSTICK_Callback(void)
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();
-    UART_Report_Handler();
+    if (UART1_Report_Flag)
+    {
+      UART_Report_Handler();
+    }
     Sys_Count = 0;
   }
 }
@@ -164,7 +168,7 @@ int main(void)
   //  __HAL_TIM_SET_AUTORELOAD(&htim6, 499);
   // 初始化电机所需定时器参数
   Motor_Init();
-  
+
   for (uint8_t i = 0; i < 4; i++)
   {
     // 开启脉冲定时器
@@ -172,16 +176,16 @@ int main(void)
     // 开启编码器计时器
     HAL_TIM_Encoder_Start(&MOTOR_Parameters[i].htim_encoder, TIM_CHANNEL_ALL);
   }
-  
-/*   HAL_TIM_Base_Start_IT(&htim6);
-  HAL_TIM_Base_Start_IT(&htim7);
-  HAL_TIM_Base_Start_IT(&htim8);
-  HAL_TIM_Base_Start_IT(&htim1);
-  // 开启编码器计时器
-  HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
-  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL); */
+
+  /*   HAL_TIM_Base_Start_IT(&htim6);
+    HAL_TIM_Base_Start_IT(&htim7);
+    HAL_TIM_Base_Start_IT(&htim8);
+    HAL_TIM_Base_Start_IT(&htim1);
+    // 开启编码器计时器
+    HAL_TIM_Encoder_Start(&htim5, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL); */
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -193,10 +197,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     // 循环读取标志位
-    if (UART1_Flag == 1)
+    if (UART1_Recieve_Flag == 1)
     {
       Drive_Motor();
-      UART1_Flag = 0;
+      UART1_Recieve_Flag = 0;
     }
   }
   /* USER CODE END 3 */
