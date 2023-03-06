@@ -60,18 +60,17 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
 }
 
-void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspInit 0 */
+    /* USER CODE BEGIN USART1_MspInit 0 */
 
-  /* USER CODE END USART1_MspInit 0 */
+    /* USER CODE END USART1_MspInit 0 */
     /* USART1 clock enable */
     __HAL_RCC_USART1_CLK_ENABLE();
 
@@ -105,7 +104,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart1_rx);
+    __HAL_LINKDMA(uartHandle, hdmarx, hdma_usart1_rx);
 
     /* USART1_TX Init */
     hdma_usart1_tx.Instance = DMA1_Channel4;
@@ -121,25 +120,25 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
+    __HAL_LINKDMA(uartHandle, hdmatx, hdma_usart1_tx);
 
     /* USART1 interrupt Init */
     HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspInit 1 */
+    /* USER CODE BEGIN USART1_MspInit 1 */
 
-  /* USER CODE END USART1_MspInit 1 */
+    /* USER CODE END USART1_MspInit 1 */
   }
 }
 
-void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle)
 {
 
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspDeInit 0 */
+    /* USER CODE BEGIN USART1_MspDeInit 0 */
 
-  /* USER CODE END USART1_MspDeInit 0 */
+    /* USER CODE END USART1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART1_CLK_DISABLE();
 
@@ -147,7 +146,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PA9     ------> USART1_TX
     PA10     ------> USART1_RX
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
 
     /* USART1 DMA DeInit */
     HAL_DMA_DeInit(uartHandle->hdmarx);
@@ -155,9 +154,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
     /* USART1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspDeInit 1 */
+    /* USER CODE BEGIN USART1_MspDeInit 1 */
 
-  /* USER CODE END USART1_MspDeInit 1 */
+    /* USER CODE END USART1_MspDeInit 1 */
   }
 }
 
@@ -177,7 +176,7 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 
 void UART_Communicate_Init(void)
 {
-  //判断是否是初始化命令
+  // 判断是否是初始化命令
   if (UART1_RX_BUF[0] == 'A')
   {
     // 判断是否发送速度数据
@@ -192,7 +191,7 @@ void UART_Communicate_Init(void)
     default:
       break;
     }
-    UART1_Setting_Flag=1;
+    UART1_Setting_Flag = 1;
   }
 }
 
@@ -208,10 +207,23 @@ void UART_Receive_Handler(void)
     }
     if (verify == speed_receiver.buffer[14])
     {
-      speed_receiver.X_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[1], speed_receiver.buffer[2]);
-      speed_receiver.Y_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[3], speed_receiver.buffer[4]);
-      speed_receiver.Z_speed = XYZ_Target_Speed_transition(speed_receiver.buffer[5], speed_receiver.buffer[6]);
-      printf("收到的速度为%d %d %d", speed_receiver.X_speed, speed_receiver.Y_speed, speed_receiver.Z_speed);
+      //将数据切分后传入所需的数据
+      for (uint8_t i = 2; i < 14; i++)
+      {
+        if (i < 6)
+        {
+          speed_receiver.X_speed.byte[(i - 2) % 4] = speed_receiver.buffer[i];
+        }
+        if (5 < i && i < 10)
+        {
+          speed_receiver.Y_speed.byte[(i - 2) % 4] = speed_receiver.buffer[i];
+        }
+        if (9 < i)
+        {
+          speed_receiver.Z_speed.byte[(i - 2) % 4] = speed_receiver.buffer[i];
+        }
+      }
+      printf("收到的速度为%f %f %f", speed_receiver.X_speed.f_data, speed_receiver.Y_speed.f_data, speed_receiver.Z_speed.f_data);
       memset(speed_receiver.buffer, 0x00, sizeof(speed_receiver.buffer));
       // 接收完数据标志位
       UART1_Speed_Flag = 1;
@@ -226,7 +238,7 @@ void UART_Report_Handler()
   memset(speed_reporter.buffer, 0x00, sizeof(speed_reporter.buffer));
 
   // 四轮计算速度计算三轴速度
-  // 赋值到buffer中进行传输
+  // 赋值到buffer中进行传输，四bit为一个float
   speed_reporter.buffer[0] = speed_reporter.Data_Header;
   for (size_t i = 2; i < 14; i++)
   {
@@ -253,15 +265,6 @@ void UART_Report_Handler()
   // printf("当前的速度为%f %f %f", speed_reporter.X_speed.f_data, speed_reporter.Y_speed.f_data, speed_reporter.Z_speed.f_data);
 
   HAL_UART_Transmit_DMA(&huart1, speed_reporter.buffer, sizeof(speed_reporter.buffer));
-}
-
-short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low)
-{
-  // 数据转换的中间变量
-  short transition;
-  // 将高8位和低8位整合成一个16位的short型数据
-  transition = ((High << 8) + Low);
-  return transition; // 接收单位是mm/s
 }
 
 /* USER CODE END 1 */

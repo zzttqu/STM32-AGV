@@ -8,9 +8,9 @@ typedef struct _Speed_Receiver_
     unsigned char buffer[64];
 
     unsigned char Data_Header;
-    short X_speed;
-    short Y_speed;
-    short Z_speed;
+    uart_Float X_speed;
+    uart_Float Y_speed;
+    uart_Float Z_speed;
     unsigned char Data_Tail;
 
 } Speed_Receiver;

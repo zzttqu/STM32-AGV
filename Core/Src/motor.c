@@ -32,10 +32,10 @@ void Drive_Motor()
   float tmp[4];
   // 车轮运动学逆解算
   // 转化为个轮子的线速度值，单位mm/s
-  MOTOR_Parameters[0].target = speed_receiver.X_speed + speed_receiver.Y_speed - speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[1].target = -speed_receiver.X_speed + speed_receiver.Y_speed - speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[2].target = speed_receiver.X_speed + speed_receiver.Y_speed + speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[3].target = -speed_receiver.X_speed + speed_receiver.Y_speed + speed_receiver.Z_speed * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[0].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[1].target = -speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[2].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data + speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
+  MOTOR_Parameters[3].target = -speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data + speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
   // 先计算完需要计算的再赋值防止时间差
   for (uint8_t i = 0; i < 4; i++)
   {
