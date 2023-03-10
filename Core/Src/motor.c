@@ -1,8 +1,8 @@
 /*
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
- * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-07 21:54:22
+ * @LastEditors: zzttqu zzttqu@gmail.com
+ * @LastEditTime: 2023-03-10 14:03:34
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -27,7 +27,31 @@ void Motor_Init()
   MOTOR_Parameters[3].htim_speed = htim1;
   MOTOR_Parameters[3].htim_encoder = htim5;
 }
-void Drive_Motor()
+void Motor_Start()
+{
+  // 使用it表示有中断回调，但是编码器不需要回调，只要定时读取就行，就不用带it后缀的了。
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    // 开启脉冲定时器
+    HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);
+    // 开启编码器计时器
+    HAL_TIM_Encoder_Start(&MOTOR_Parameters[i].htim_encoder, TIM_CHANNEL_ALL);
+  }
+}
+void Motor_Stop()
+{
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    // 关闭脉冲定时器
+    HAL_TIM_Base_Stop_IT(&MOTOR_Parameters[i].htim_speed);
+    // 关闭编码器计时器
+    HAL_TIM_Encoder_Stop(&MOTOR_Parameters[i].htim_encoder, TIM_CHANNEL_ALL);
+    // 清空定时器中断
+    __HAL_TIM_CLEAR_IT(&MOTOR_Parameters[i].htim_speed, TIM_IT_UPDATE);
+  }
+}
+
+void Change_Speed()
 {
   float tmp[4];
   // 车轮运动学逆解算
@@ -99,11 +123,11 @@ void Get_Encoder()
     __HAL_TIM_SET_COUNTER(&htim5, 0); */
 
   speed_reporter.Y_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (MOTOR_Parameters[0].encoder + MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4);
+                                   (MOTOR_Parameters[0].encoder + MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4);
   speed_reporter.X_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder - MOTOR_Parameters[3].encoder) / 4);
+                                   (MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder - MOTOR_Parameters[3].encoder) / 4);
   speed_reporter.Z_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                         (-MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4 / (wheel_center_x + wheel_center_y));
+                                   (-MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4 / (wheel_center_x + wheel_center_y));
   for (uint8_t i = 0; i < 4; i++)
   {
     // 清零计数

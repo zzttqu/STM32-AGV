@@ -47,6 +47,7 @@ extern UART_HandleTypeDef huart1;
   extern uint8_t UART1_Speed_Flag;
   extern uint8_t UART1_Report_Flag;
   extern uint8_t UART1_Setting_Flag;
+  extern uint8_t UART1_Motor_Start_Flag;
 /* USER CODE END Private defines */
 
 void MX_USART1_UART_Init(void);

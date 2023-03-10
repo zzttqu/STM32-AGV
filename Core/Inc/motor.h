@@ -39,6 +39,10 @@ extern Motor_Parameter MOTORC; */
 extern Motor_Parameter MOTOR_Parameters[];
 void Motor_Init();
 
-void Drive_Motor();
+void Motor_Start();
+
+void Motor_Stop();
+
+void Change_Speed();
 
 void Get_Encoder();

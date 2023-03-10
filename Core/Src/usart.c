@@ -27,6 +27,7 @@ uint8_t UART1_RX_BUF[64];
 uint8_t UART1_Speed_Flag = 0;
 uint8_t UART1_Setting_Flag = 0;
 uint8_t UART1_Report_Flag = 0;
+uint8_t UART1_Motor_Start_Flag = 0;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -191,6 +192,18 @@ void UART_Communicate_Init(void)
     default:
       break;
     }
+    switch (UART1_RX_BUF[2])
+    {
+    case active_code:
+      UART1_Motor_Start_Flag = 1;
+      break;
+    case deactive_code:
+      UART1_Motor_Start_Flag = 0;
+      break;
+    default:
+      break;
+    }
+    // 接受到了设置的串口消息
     UART1_Setting_Flag = 1;
   }
 }
@@ -207,7 +220,7 @@ void UART_Receive_Handler(void)
     }
     if (verify == speed_receiver.buffer[14])
     {
-      //将数据切分后传入所需的数据
+      // 将数据切分后传入所需的数据
       for (uint8_t i = 2; i < 14; i++)
       {
         if (i < 6)
