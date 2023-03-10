@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-05 16:23:06
+ * @LastEditTime: 2023-03-07 18:31:50
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -29,10 +29,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MOTORA_SPEED HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4)
-#define MOTORB_SPEED HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_4)
-#define MOTORC_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
-#define MOTORD_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_2)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -210,6 +207,8 @@ int main(void)
     {
       HAL_IWDG_Refresh(&hiwdg);
     }
+    // TODO 这段看门狗需要删除 
+    HAL_IWDG_Refresh(&hiwdg);
     
   }
   /* USER CODE END 3 */

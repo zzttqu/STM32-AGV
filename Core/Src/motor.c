@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu 1161085395@qq.com
- * @LastEditTime: 2023-03-05 16:42:50
+ * @LastEditTime: 2023-03-07 21:54:22
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -32,6 +32,7 @@ void Drive_Motor()
   float tmp[4];
   // 车轮运动学逆解算
   // 转化为个轮子的线速度值，单位mm/s
+  // 左上 左下 右下 右上 四个轮子都是朝着y轴正方向
   MOTOR_Parameters[0].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
   MOTOR_Parameters[1].target = -speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
   MOTOR_Parameters[2].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data + speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
