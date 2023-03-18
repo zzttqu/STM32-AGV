@@ -41,8 +41,6 @@
 
 /* USER CODE BEGIN PV */
 int Sys_Count = 0;
-Speed_Receiver speed_receiver = {0};
-Speed_Reporter speed_reporter = {0};
 extern uint8_t UART1_Speed_Flag;
 extern uint8_t UART1_Report_Flag;
 extern uint8_t UART1_Setting_Flag;
@@ -100,6 +98,7 @@ void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
   if (Sys_Count == 50) // 每0.05s传输一次速度数据
+                        //编码器上限是32768
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();

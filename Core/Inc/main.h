@@ -43,8 +43,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern Speed_Receiver speed_receiver;
-extern Speed_Reporter speed_reporter;
+extern uint8_t speed_receiver[];
+extern uint8_t speed_reporter[];
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

@@ -2,15 +2,13 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-12 14:31:18
+ * @LastEditTime: 2023-03-18 12:46:07
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
  */
 #include "motor.h"
 
-extern Speed_Reporter speed_reporter;
-extern Speed_Receiver speed_receiver;
 /* Motor_Parameter MOTORA;
 Motor_Parameter MOTORB;
 Motor_Parameter MOTORC;
@@ -53,29 +51,10 @@ void Motor_Stop()
 
 void Change_Speed()
 {
-  float tmp[4];
-  // 车轮运动学逆解算
-  // 转化为个轮子的线速度值，单位mm/s
-  // 左上 左下 右下 右上 四个轮子都是朝着y轴正方向
-  MOTOR_Parameters[0].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[1].target = -speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data - speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[2].target = speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data + speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
-  MOTOR_Parameters[3].target = -speed_receiver.X_speed.f_data + speed_receiver.Y_speed.f_data + speed_receiver.Z_speed.f_data * (wheel_center_x + wheel_center_y);
-  // 先计算完需要计算的再赋值防止时间差
   for (uint8_t i = 0; i < 4; i++)
   {
-    // 要先变为角速度值，再转化为preloader数值
-    tmp[i] = (pai * wheel_r_mm * 1000 / MOTOR_Parameters[i].target - 1);
-  }
-
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    // 取绝对值
-    MOTOR_Parameters[i].preloader = (tmp[i] > 0) ? tmp[i] : -tmp[i];
-    // 方向置位
-    MOTOR_Parameters[i].direction_Target = (tmp[i] > 0) ? 1 : -1;
     // 修改定时器
-    __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader);
+    __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader.i_data);
   }
   // 修改轮子方向
   (MOTOR_Parameters[0].direction_Target > 0) ? MOTORA_FORWARD : MOTORA_BACKWARD;
@@ -89,7 +68,6 @@ void Change_Speed()
     MOTORC.target = (int)(pai * wheel_r_mm * 1000 / MOTORC.target - 1);
     MOTORD.target = (int)(pai * wheel_r_mm * 1000 / MOTORD.target - 1); */
 
-  // 修改计时器
 
   /*   __HAL_TIM_SET_AUTORELOAD(&htim6, MOTORA.target);
     __HAL_TIM_SET_AUTORELOAD(&htim7, MOTORB.target);
@@ -103,8 +81,9 @@ void Get_Encoder()
   {
     // 取是正转还是反转（已经废弃）?
     MOTOR_Parameters[i].direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
-    // 取定时器的数值
-    MOTOR_Parameters[i].encoder = __HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder) / 4;
+    // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
+    MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+    MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);
   }
 
   /*   MOTORA.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
@@ -121,13 +100,6 @@ void Get_Encoder()
     __HAL_TIM_SET_COUNTER(&htim3, 0);
     __HAL_TIM_SET_COUNTER(&htim4, 0);
     __HAL_TIM_SET_COUNTER(&htim5, 0); */
-
-  speed_reporter.Y_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                   (MOTOR_Parameters[0].encoder + MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4);
-  speed_reporter.X_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                   (MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder - MOTOR_Parameters[3].encoder) / 4);
-  speed_reporter.Z_speed.f_data = (pai * wheel_r_mm / encoder_num *
-                                   (-MOTOR_Parameters[0].encoder - MOTOR_Parameters[1].encoder + MOTOR_Parameters[2].encoder + MOTOR_Parameters[3].encoder) / 4 / (wheel_center_x + wheel_center_y));
   for (uint8_t i = 0; i < 4; i++)
   {
     // 清零计数

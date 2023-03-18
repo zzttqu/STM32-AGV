@@ -1,28 +1,14 @@
-typedef union _uart_Float_
+typedef union _uart_Short_
 {
-    float f_data;
-    uint8_t byte[4];
-} uart_Float;
-typedef struct _Speed_Receiver_
+    short i_data;
+    uint8_t byte[2];
+} uart_Short;
+typedef struct _Motor_Parameter_
 {
-    unsigned char buffer[64];
-
-    unsigned char Data_Header;
-    uart_Float X_speed;
-    uart_Float Y_speed;
-    uart_Float Z_speed;
-    unsigned char Data_Tail;
-
-} Speed_Receiver;
-
-typedef struct _Speed_Reporter_
-{
-    unsigned char buffer[32];
-
-    unsigned char Data_Header;
-    uart_Float X_speed;
-    uart_Float Y_speed;
-    uart_Float Z_speed;
-    unsigned char Data_Tail;
-
-} Speed_Reporter;
+  uart_Short preloader;
+  TIM_HandleTypeDef htim_speed;
+  uint8_t direction_Target;
+  uart_Short encoder;
+  TIM_HandleTypeDef htim_encoder;
+  uint8_t direction_Now;
+} Motor_Parameter;
