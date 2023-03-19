@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-18 20:09:21
+ * @LastEditTime: 2023-03-19 21:03:48
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -14,6 +14,8 @@ Motor_Parameter MOTORB;
 Motor_Parameter MOTORC;
 Motor_Parameter MOTORD; */
 Motor_Parameter MOTOR_Parameters[4];
+uint8_t direction_Flag = 0;
+extern uint8_t Motor_Start_Flag;
 void Motor_Init()
 {
   MOTOR_Parameters[0].htim_speed = htim6;
@@ -38,6 +40,10 @@ void Motor_Start()
 }
 void Motor_Stop()
 {
+  MOTORA_STOP;
+  MOTORB_STOP;
+  MOTORC_STOP;
+  MOTORD_STOP;
   for (uint8_t i = 0; i < 4; i++)
   {
     // 关闭脉冲定时器
@@ -49,33 +55,45 @@ void Motor_Stop()
   }
 }
 
-void Change_Speed()
+void Change_Direction()
 {
-  for (uint8_t i = 0; i < 4; i++)
-  {
-    //脉冲太长就直接停定时器了
-    if ( MOTOR_Parameters[i].preloader.i_data>10000)
-    {
-      HAL_TIM_Base_Stop_IT(&MOTOR_Parameters[i].htim_speed);
-    }
-    else{
-    // 修改定时器
-    __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader.i_data);
-    }
-
-  }
   // 修改轮子方向
   (MOTOR_Parameters[0].direction_Target > 0) ? MOTORA_FORWARD : MOTORA_BACKWARD;
   (MOTOR_Parameters[1].direction_Target > 0) ? MOTORB_FORWARD : MOTORB_BACKWARD;
   (MOTOR_Parameters[2].direction_Target > 0) ? MOTORC_FORWARD : MOTORC_BACKWARD;
   (MOTOR_Parameters[3].direction_Target > 0) ? MOTORD_FORWARD : MOTORD_BACKWARD;
+}
 
+void Change_Speed()
+{
+  MOTORA_STOP;
+  MOTORB_STOP;
+  MOTORC_STOP;
+  MOTORD_STOP;
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    // 脉冲太长就直接停定时器了
+    if (MOTOR_Parameters[i].preloader.i_data > 10000)
+    {
+      HAL_TIM_Base_Stop_IT(&MOTOR_Parameters[i].htim_speed);
+    }
+    else
+    { // 不能太短了
+      if (MOTOR_Parameters[i].preloader.i_data < 100)
+      {
+        MOTOR_Parameters[i].preloader.i_data = 100;
+      }
+      // 修改定时器
+      __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader.i_data);
+      Motor_Start_Flag = 1;
+      HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);
+    }
+  }
   /*  已优化
     MOTORA.target = (int)(pai * wheel_r_mm * 1000 / MOTORA.target - 1);
     MOTORB.target = (int)(pai * wheel_r_mm * 1000 / MOTORB.target - 1);
     MOTORC.target = (int)(pai * wheel_r_mm * 1000 / MOTORC.target - 1);
     MOTORD.target = (int)(pai * wheel_r_mm * 1000 / MOTORD.target - 1); */
-
 
   /*   __HAL_TIM_SET_AUTORELOAD(&htim6, MOTORA.target);
     __HAL_TIM_SET_AUTORELOAD(&htim7, MOTORB.target);
@@ -85,10 +103,19 @@ void Change_Speed()
 
 void Get_Encoder()
 {
-  for (uint8_t i = 0; i < 4; i++)
+  // 左右不一样，编码器也要取负哦！
+  for (uint8_t i = 0; i < 2; i++)
   {
     // 取是正转还是反转（已经废弃）?
     MOTOR_Parameters[i].direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
+    // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
+    MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+    MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data / 4);
+  }
+  for (uint8_t i = 2; i < 4; i++)
+  {
+    // 取是正转还是反转（已经废弃）?
+    MOTOR_Parameters[i].direction_Now = -(__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder));
     // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
     MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
     MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);

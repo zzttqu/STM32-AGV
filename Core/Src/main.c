@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-18 20:18:11
+ * @LastEditTime: 2023-03-19 23:42:19
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -45,6 +45,8 @@ extern uint8_t UART1_Speed_Flag;
 extern uint8_t UART1_Report_Flag;
 extern uint8_t UART1_Setting_Flag;
 extern Motor_Parameter MOTOR_Parameters[];
+extern uint8_t direction_Flag;
+extern uint8_t Motor_Start_Flag;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,7 +99,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
-  if (Sys_Count == 50) // 每0.05s传输一次速度数据
+  if (Sys_Count == 100) // 每0.1s传输一次速度数据
                         //编码器上限是32768
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
@@ -189,21 +191,14 @@ int main(void)
     // 循环读取标志位
     // 修改电机是否启动
     //之后要删
-    Motor_Start();
+    // 修改速度
     MOTORA_FORWARD;
     MOTORB_FORWARD;
     MOTORC_FORWARD;
     MOTORD_FORWARD;
-    /* if (UART1_Motor_Start_Flag == 1)
-    {
-      Motor_Start();
-    }
-    else{
-      Motor_Stop();
-    } */
-    // 修改速度
     if (UART1_Speed_Flag == 1)
     {
+      Change_Direction();
       Change_Speed();
       UART1_Speed_Flag = 0;
     }

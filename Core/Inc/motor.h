@@ -26,9 +26,13 @@
 #define MOTORD_BACKWARD HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11, GPIO_PIN_SET)
 
 #define MOTORA_SPEED HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4)
+#define MOTORA_STOP HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4,GPIO_PIN_RESET)
 #define MOTORB_SPEED HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_4)
+#define MOTORB_STOP HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4,GPIO_PIN_RESET)
 #define MOTORC_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0)
+#define MOTORC_STOP HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0,GPIO_PIN_RESET)
 #define MOTORD_SPEED HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_10)
+#define MOTORD_STOP HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10,GPIO_PIN_RESET)
 
 
 /* extern Motor_Parameter MOTORD;
@@ -43,5 +47,7 @@ void Motor_Start();
 void Motor_Stop();
 
 void Change_Speed();
+
+void Change_Direction();
 
 void Get_Encoder();

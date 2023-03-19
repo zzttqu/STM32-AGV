@@ -7,8 +7,8 @@ typedef struct _Motor_Parameter_
 {
   uart_Short preloader;
   TIM_HandleTypeDef htim_speed;
-  uint8_t direction_Target;
+  int8_t direction_Target;
   uart_Short encoder;
   TIM_HandleTypeDef htim_encoder;
-  uint8_t direction_Now;
+  int8_t direction_Now;
 } Motor_Parameter;
