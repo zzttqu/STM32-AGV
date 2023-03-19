@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-18 12:46:07
+ * @LastEditTime: 2023-03-18 20:09:21
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -53,8 +53,16 @@ void Change_Speed()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
+    //脉冲太长就直接停定时器了
+    if ( MOTOR_Parameters[i].preloader.i_data>10000)
+    {
+      HAL_TIM_Base_Stop_IT(&MOTOR_Parameters[i].htim_speed);
+    }
+    else{
     // 修改定时器
     __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader.i_data);
+    }
+
   }
   // 修改轮子方向
   (MOTOR_Parameters[0].direction_Target > 0) ? MOTORA_FORWARD : MOTORA_BACKWARD;

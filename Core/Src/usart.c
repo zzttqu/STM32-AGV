@@ -207,47 +207,47 @@ void UART_Communicate_Init(void)
     }
     // 接受到了设置的串口消息
     UART1_Setting_Flag = 1;
+    memset(UART1_RX_BUF, 0x00, sizeof(UART1_RX_BUF));
   }
 }
 
 void UART_Receive_Handler(void)
 {
-  if (speed_receiver[0] == Header && speed_receiver[11] == Tail) // 0x53  0x45
+  if (speed_receiver[0] == Header && speed_receiver[15] == Tail) // 0x53  0x45
   {
     uint8_t verify = 0x00;
-    for (uint8_t i = 0; i < 9; i++)
+    for (uint8_t i = 0; i < 14; i++)
     {
       // 第十四位是异或校验位
-      verify = speed_reporter[i] ^ verify;
+      verify = speed_receiver[i] ^ verify;
     }
-    if (verify == speed_receiver[10])
+    if (verify == speed_receiver[14])
     {
       // 将数据切分后传入所需的数据
-      for (uint8_t i = 2; i < 10; i++)
+      for (uint8_t i = 2; i < 14; i++)
       {
-        if (i < 6)
+        if (i < 4)
         {
-          MOTOR_Parameters[0].preloader.byte[(i - 2) % 2] = speed_receiver[i];
+          MOTOR_Parameters[0].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
         }
         else if (3 < i && i < 6)
         {
-          MOTOR_Parameters[1].preloader.byte[(i - 2) % 2] = speed_receiver[i];
+          MOTOR_Parameters[1].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
         }
         else if (5 < i && i < 8)
         {
-          MOTOR_Parameters[2].preloader.byte[(i - 2) % 2] = speed_receiver[i];
+          MOTOR_Parameters[2].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
         }
         else if (7 < i && i < 10)
         {
-          MOTOR_Parameters[3].preloader.byte[(i - 2) % 2] = speed_receiver[i];
+          MOTOR_Parameters[3].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
         }
-        else if (9<i&&i<14)
+        else if (9 < i && i < 14)
         {
-          MOTOR_Parameters[(i - 2) % 4].direction_Target=speed_receiver[i];
+          MOTOR_Parameters[(i - 2) % 4].direction_Target = speed_receiver[i];
         }
-        
       }
-      printf("收到的速度为%d %d %d %d", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
+      printf("收到的速度为%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
       memset(speed_receiver, 0x00, sizeof(speed_receiver));
       // 接收完数据标志位
       UART1_Speed_Flag = 1;
