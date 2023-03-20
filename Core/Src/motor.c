@@ -110,7 +110,7 @@ void Get_Encoder()
     MOTOR_Parameters[i].direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
     // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
     MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
-    MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data / 4);
+    MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);
   }
   for (uint8_t i = 2; i < 4; i++)
   {
@@ -118,7 +118,7 @@ void Get_Encoder()
     MOTOR_Parameters[i].direction_Now = -(__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder));
     // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
     MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
-    MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);
+    MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data / 4);
   }
 
   /*   MOTORA.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);

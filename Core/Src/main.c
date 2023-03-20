@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-19 23:42:19
+ * @LastEditTime: 2023-03-20 00:19:52
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -192,10 +192,6 @@ int main(void)
     // 修改电机是否启动
     //之后要删
     // 修改速度
-    MOTORA_FORWARD;
-    MOTORB_FORWARD;
-    MOTORC_FORWARD;
-    MOTORD_FORWARD;
     if (UART1_Speed_Flag == 1)
     {
       Change_Direction();
