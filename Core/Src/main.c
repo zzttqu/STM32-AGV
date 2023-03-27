@@ -3,7 +3,7 @@
  * @Author: zzttqu
  * @Date: 2023-01-14 17:14:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-20 00:19:52
+ * @LastEditTime: 2023-03-27 23:25:42
  * @FilePath: \uart\Core\Src\main.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by zzttqu email: 1161085395@qq.com, All Rights Reserved.
@@ -80,19 +80,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   // 轮速脉冲输出
   if (htim->Instance == TIM6)
   {
-    MOTORA_SPEED;
+    MOTOR1_SPEED;
   }
   if (htim->Instance == TIM7)
   {
-    MOTORB_SPEED;
+    MOTOR2_SPEED;
   }
   if (htim->Instance == TIM8)
   {
-    MOTORC_SPEED;
+    MOTOR3_SPEED;
   }
   if (htim->Instance == TIM1)
   {
-    MOTORD_SPEED;
+    MOTOR4_SPEED;
   }
 }
 

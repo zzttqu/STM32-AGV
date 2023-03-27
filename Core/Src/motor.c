@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-19 21:03:48
+ * @LastEditTime: 2023-03-27 23:40:22
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -40,10 +40,10 @@ void Motor_Start()
 }
 void Motor_Stop()
 {
-  MOTORA_STOP;
-  MOTORB_STOP;
-  MOTORC_STOP;
-  MOTORD_STOP;
+  MOTOR1_STOP;
+  MOTOR2_STOP;
+  MOTOR3_STOP;
+  MOTOR4_STOP;
   for (uint8_t i = 0; i < 4; i++)
   {
     // 关闭脉冲定时器
@@ -58,18 +58,18 @@ void Motor_Stop()
 void Change_Direction()
 {
   // 修改轮子方向
-  (MOTOR_Parameters[0].direction_Target > 0) ? MOTORA_FORWARD : MOTORA_BACKWARD;
-  (MOTOR_Parameters[1].direction_Target > 0) ? MOTORB_FORWARD : MOTORB_BACKWARD;
-  (MOTOR_Parameters[2].direction_Target > 0) ? MOTORC_FORWARD : MOTORC_BACKWARD;
-  (MOTOR_Parameters[3].direction_Target > 0) ? MOTORD_FORWARD : MOTORD_BACKWARD;
+  (MOTOR_Parameters[0].direction_Target > 0) ? MOTOR1_FORWARD : MOTOR1_BACKWARD;
+  (MOTOR_Parameters[1].direction_Target > 0) ? MOTOR2_FORWARD : MOTOR2_BACKWARD;
+  (MOTOR_Parameters[2].direction_Target > 0) ? MOTOR3_FORWARD : MOTOR3_BACKWARD;
+  (MOTOR_Parameters[3].direction_Target > 0) ? MOTOR4_FORWARD : MOTOR4_BACKWARD;
 }
 
 void Change_Speed()
 {
-  MOTORA_STOP;
-  MOTORB_STOP;
-  MOTORC_STOP;
-  MOTORD_STOP;
+  MOTOR1_STOP;
+  MOTOR2_STOP;
+  MOTOR3_STOP;
+  MOTOR4_STOP;
   for (uint8_t i = 0; i < 4; i++)
   {
     // 脉冲太长就直接停定时器了
@@ -104,21 +104,24 @@ void Change_Speed()
 void Get_Encoder()
 {
   // 左右不一样，编码器也要取负哦！
-  for (uint8_t i = 0; i < 2; i++)
+  for (uint8_t i = 0; i < 4; i++)
   {
-    // 取是正转还是反转（已经废弃）?
-    MOTOR_Parameters[i].direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
-    // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
-    MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
-    MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);
-  }
-  for (uint8_t i = 2; i < 4; i++)
-  {
-    // 取是正转还是反转（已经废弃）?
-    MOTOR_Parameters[i].direction_Now = -(__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder));
-    // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
-    MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
-    MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data / 4);
+    if (i == 0||i == 3)
+    {
+      // 取是正转还是反转（已经废弃）?
+      MOTOR_Parameters[i].direction_Now = -__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
+      // 取定时器的数值，想了想还是强制转换吧，毕竟改成了100ms就采集一次不会太大
+      MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+      MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data / 4);
+    }
+    else
+    {
+      // 取是正转还是反转（已经废弃）?
+      MOTOR_Parameters[i].direction_Now = (__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder));
+      // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
+      MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+      MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data / 4);
+    }
   }
 
   /*   MOTORA.direction_Now = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim2);
