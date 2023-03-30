@@ -108,6 +108,7 @@ void HAL_SYSTICK_Callback(void)
   if (Sys_Count == 100) // 每0.1s传输一次速度数据
                         //编码器上限是32768
   {
+    HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();
     if (UART1_Report_Flag)
@@ -170,7 +171,7 @@ int main(void)
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 初始化电机定时器参数
   Motor_Init();
-  Motor_Start();
+  //Motor_Start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
