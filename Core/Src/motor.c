@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-27 23:40:22
+ * @LastEditTime: 2023-03-28 16:17:12
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
