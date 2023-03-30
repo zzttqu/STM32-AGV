@@ -19,9 +19,17 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-
+#include "motor.h"
 /* USER CODE BEGIN 0 */
-
+uint8_t speed_receiver[24];
+uint8_t speed_reporter[24];
+extern Motor_Parameter MOTOR_Parameters[];
+uint8_t UART1_RX_BUF[64];
+uint8_t UART1_Speed_Flag = 0;
+uint8_t UART1_Setting_Flag = 0;
+uint8_t UART1_Report_Flag = 0;
+uint8_t Motor_Start_Flag = 0;
+extern uint8_t direction_Flag;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart1;
@@ -158,5 +166,134 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
+{
+  if (huart == &huart1) // 判断是否为串口1产生中断
+  {
+    memcpy(speed_receiver, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
+    UART_Communicate_Init();
+    UART_Receive_Handler();
+    rxlen = 0;                                                  // 清除数据长度计数
+    HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 重新打开DMA接收
+  }
+}
+
+void UART_Communicate_Init(void)
+{
+  // 判断是否是初始化命令
+  if (UART1_RX_BUF[0] == 'A')
+  {
+    // 判断是否发送速度数据
+    switch (UART1_RX_BUF[1])
+    {
+    case active_code:
+      UART1_Report_Flag = 1;
+      break;
+    case deactive_code:
+      UART1_Report_Flag = 0;
+      break;
+    default:
+      break;
+    }
+    // 是否开启电机
+    switch (UART1_RX_BUF[2])
+    {
+    case active_code:
+      Motor_Start();
+      break;
+    case deactive_code:
+      Motor_Stop();
+      break;
+    default:
+      break;
+    }
+    // 接受到了设置的串口消息
+    UART1_Setting_Flag = 1;
+    memset(UART1_RX_BUF, 0x00, sizeof(UART1_RX_BUF));
+  }
+}
+
+void UART_Receive_Handler(void)
+{
+  if (speed_receiver[0] == Header && speed_receiver[15] == Tail) // 0x53  0x45
+  {
+    uint8_t verify = 0x00;
+    for (uint8_t i = 0; i < 14; i++)
+    {
+      // 第十四位是异或校验位
+      verify = speed_receiver[i] ^ verify;
+    }
+    if (verify == speed_receiver[14])
+    {
+      // 将数据切分后传入所需的数据
+      for (uint8_t i = 2; i < 14; i++)
+      {
+        if (i < 4)
+        {
+          MOTOR_Parameters[0].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
+        }
+        else if (3 < i && i < 6)
+        {
+          MOTOR_Parameters[1].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
+        }
+        else if (5 < i && i < 8)
+        {
+          MOTOR_Parameters[2].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
+        }
+        else if (7 < i && i < 10)
+        {
+          MOTOR_Parameters[3].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
+        }
+        else if (9 < i && i < 14)
+        {
+          MOTOR_Parameters[(i - 2) % 4].direction_Target = speed_receiver[i];
+        }
+      }
+      printf("收到的速度为%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
+      memset(speed_receiver, 0x00, sizeof(speed_receiver));
+      // 接收完数据标志位
+      UART1_Speed_Flag = 1;
+    }
+  }
+}
+
+void UART_Report_Handler()
+{
+
+  memset(speed_reporter, 0x00, sizeof(speed_reporter));
+
+  // 四轮计算速度计算三轴速度
+  // 赋值到buffer中进行传输，四bit为一个float
+  speed_reporter[0] = Header;
+  for (size_t i = 2; i < 10; i++)
+  {
+    if (i < 4)
+    {
+      speed_reporter[i] = MOTOR_Parameters[0].encoder.byte[(i - 2) % 2];
+    }
+    else if (3 < i && i < 6)
+    {
+      speed_reporter[i] = MOTOR_Parameters[1].encoder.byte[(i - 2) % 2];
+    }
+    else if (5 < i && i < 8)
+    {
+      speed_reporter[i] = MOTOR_Parameters[2].encoder.byte[(i - 2) % 2];
+    }
+    else if (7 < i && i < 10)
+    {
+      speed_reporter[i] = MOTOR_Parameters[3].encoder.byte[(i - 2) % 2];
+    }
+  }
+  for (size_t i = 0; i < 10; i++)
+  {
+    // 第十四位是异或校验位
+    speed_reporter[10] = speed_reporter[i] ^ speed_reporter[10];
+  }
+
+  speed_reporter[11] = Tail;
+  // printf("当前的速度为%f %f %f", speed_reporter.X_speed.f_data, speed_reporter.Y_speed.f_data, speed_reporter.Z_speed.f_data);
+
+  HAL_UART_Transmit_DMA(&huart1, speed_reporter, sizeof(speed_reporter));
+}
 
 /* USER CODE END 1 */
