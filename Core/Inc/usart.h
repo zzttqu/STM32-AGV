@@ -22,18 +22,17 @@
 #define __USART_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-  /* USER CODE BEGIN Includes */
+/* USER CODE BEGIN Includes */
 
-  /* USER CODE END Includes */
+/* USER CODE END Includes */
 
-  extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN Private defines */
 #define UART1_RX_SIZE 128
@@ -43,7 +42,7 @@ extern "C"
 #define active_code 'I'
 #define deactive_code 'S'
   extern uint8_t UART1_RX_BUF[];  // 串口接收缓存
-  extern uint8_t UART1_RX_LEN;    // 接收到的数据量
+  extern uint8_t UART1_RX_LEN;    // 接收到的数据�?
   extern uint8_t UART1_RX_Data[]; // 数据缓存
   extern uint8_t UART1_Speed_Flag;
   extern uint8_t UART1_Report_Flag;
@@ -66,3 +65,4 @@ void UART_Communicate_Init(void);
 #endif
 
 #endif /* __USART_H__ */
+
