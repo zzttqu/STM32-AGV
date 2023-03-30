@@ -1,0 +1,5 @@
+Drivers
+#/*是排除文件夹下的，不排除文件夹本身，如果没有*号第五行就不会生效
+MDK-ARM/*
+.vscode
+!MDK-ARM/*.uvprojx
