@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-
+#include "motor.h"
 /* USER CODE BEGIN 0 */
 uint8_t speed_receiver[24];
 uint8_t speed_reporter[24];
@@ -168,7 +168,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 /* USER CODE BEGIN 1 */
 void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 {
-  if (huart == &huart1) // 判断是否为串�?1产生中断
+  if (huart == &huart1) // 判断是否为串口1产生中断
   {
     memcpy(speed_receiver, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
     UART_Communicate_Init();
@@ -180,10 +180,10 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 
 void UART_Communicate_Init(void)
 {
-  // 判断是否是初始化命令
+    // 判断是否是初始化命令
   if (UART1_RX_BUF[0] == 'A')
   {
-    // 判断是否发�?��?�度数据
+    // 判断是否发送速度数据
     switch (UART1_RX_BUF[1])
     {
     case active_code:
@@ -195,7 +195,7 @@ void UART_Communicate_Init(void)
     default:
       break;
     }
-    // 是否�?启电�?
+    // 是否开启电机
     switch (UART1_RX_BUF[2])
     {
     case active_code:
@@ -207,7 +207,7 @@ void UART_Communicate_Init(void)
     default:
       break;
     }
-    // 接受到了设置的串口消�?
+    // 接受到了设置的串口消息
     UART1_Setting_Flag = 1;
     memset(UART1_RX_BUF, 0x00, sizeof(UART1_RX_BUF));
   }
@@ -225,7 +225,7 @@ void UART_Receive_Handler(void)
     }
     if (verify == speed_receiver[14])
     {
-      // 将数据切分后传入�?�?的数�?
+      // 将数据切分后传入相应变量
       for (uint8_t i = 2; i < 14; i++)
       {
         if (i < 4)
@@ -249,7 +249,7 @@ void UART_Receive_Handler(void)
           MOTOR_Parameters[(i - 2) % 4].direction_Target = speed_receiver[i];
         }
       }
-      printf("收到的�?�度�?%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
+      printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
       memset(speed_receiver, 0x00, sizeof(speed_receiver));
       // 接收完数据标志位
       UART1_Speed_Flag = 1;
@@ -261,9 +261,6 @@ void UART_Report_Handler()
 {
 
   memset(speed_reporter, 0x00, sizeof(speed_reporter));
-
-  // 四轮计算速度计算三轴速度
-  // 赋�?�到buffer中进行传输，四bit为一个float
   speed_reporter[0] = Header;
   for (size_t i = 2; i < 10; i++)
   {
@@ -291,8 +288,7 @@ void UART_Report_Handler()
   }
 
   speed_reporter[11] = Tail;
-  // printf("当前的�?�度�?%f %f %f", speed_reporter.X_speed.f_data, speed_reporter.Y_speed.f_data, speed_reporter.Z_speed.f_data);
-
+  
   HAL_UART_Transmit_DMA(&huart1, speed_reporter, sizeof(speed_reporter));
 }
 

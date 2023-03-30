@@ -1,14 +1,14 @@
 /*
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
- * @LastEditors: zzttqu zzttqu@gmail.com
- * @LastEditTime: 2023-03-28 16:17:12
+ * @LastEditors: zzttqu zzttqu@gamil.com
+ * @LastEditTime: 2023-03-30 22:26:40
  * @FilePath: \uart\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
  */
+#include "main.h"
 #include "motor.h"
-
 /* Motor_Parameter MOTORA;
 Motor_Parameter MOTORB;
 Motor_Parameter MOTORC;

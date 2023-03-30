@@ -26,7 +26,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 #include "motor.h"
 /* USER CODE END Includes */
 
@@ -74,18 +73,18 @@ void SystemClock_Config(void);
  */
 int fputc(int ch, FILE *f)
 {
-  // 这里如果用DMA的话不太行，只能输出�?个字�?
+  // 这里如果用DMA的话不太行，只能输出一个字节
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 1000);
   return ch;
 }
 /**
- * @description: 定时器回调函�?
- * @param {TIM_HandleTypeDef} *htim 定时器指�?
+ * @description: 定时器回调函数
+ * @param {TIM_HandleTypeDef} *htim 定时器指令
  * @return {*}
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // 轮�?�脉冲输�?
+  // 轮速脉冲输出
   if (htim->Instance == TIM11)
   {
     MOTOR1_SPEED;
@@ -106,8 +105,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
-  if (Sys_Count == 100) // �?0.1s传输�?次�?�度数据
-                        // 编码器上限是32768
+  if (Sys_Count == 100) // 每0.1s传输一次速度数据
+                        //编码器上限是32768
   {
     // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();
@@ -121,9 +120,9 @@ void HAL_SYSTICK_Callback(void)
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -171,6 +170,7 @@ int main(void)
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 初始化电机定时器参数
   Motor_Init();
+  Motor_Start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -180,7 +180,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-        if (UART1_Speed_Flag == 1)
+    if (UART1_Speed_Flag == 1)
     {
       Change_Direction();
       Change_Speed();
@@ -191,30 +191,30 @@ int main(void)
     {
       HAL_IWDG_Refresh(&hiwdg);
     }
-    // TODO 这段看门狗需要删除，实际使用不能�?直喂看门�?
+    // TODO 这段看门狗需要删除，实际使用不能一直喂看门狗
     HAL_IWDG_Refresh(&hiwdg);
   }
   /* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+   * in the RCC_OscInitTypeDef structure.
+   */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.LSIState = RCC_LSI_ON;
@@ -230,9 +230,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -249,9 +248,9 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -263,14 +262,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
