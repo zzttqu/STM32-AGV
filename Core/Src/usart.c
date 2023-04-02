@@ -19,8 +19,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-#include "motor.h"
+
 /* USER CODE BEGIN 0 */
+#include "motor.h"
 uint8_t speed_receiver[24];
 uint8_t speed_reporter[24];
 extern Motor_Parameter MOTOR_Parameters[];
