@@ -113,7 +113,7 @@ void HAL_SYSTICK_Callback(void)
     Get_Encoder();
     if (UART1_Report_Flag)
     {
-      UART_Report_Handler();
+      UART_Report_Handler(MOTOR_Parameters);
     }
     Sys_Count = 0;
     temp=DS18B20_Get_Temperature();

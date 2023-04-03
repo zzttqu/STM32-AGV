@@ -42,7 +42,7 @@ extern UART_HandleTypeDef huart1;
 #define active_code 'I'
 #define deactive_code 'S'
   extern uint8_t UART1_RX_BUF[];  // 串口接收缓存
-  extern uint8_t UART1_RX_LEN;    // 接收到的数据�?
+  extern uint8_t UART1_RX_LEN;    // 接收到的数据�?
   extern uint8_t UART1_RX_Data[]; // 数据缓存
   extern uint8_t UART1_Speed_Flag;
   extern uint8_t UART1_Report_Flag;
@@ -55,8 +55,8 @@ void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN Prototypes */
 void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen);
 short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low);
-void UART_Receive_Handler(void);
-void UART_Report_Handler(void);
+void UART_Receive_Handler(Motor_Parameter* MOTOR_Parameters);
+void UART_Report_Handler(Motor_Parameter* MOTOR_Parameters);
 void UART_Communicate_Init(void);
 /* USER CODE END Prototypes */
 

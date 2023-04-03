@@ -172,7 +172,7 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
   {
     memcpy(receiver, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
     UART_Communicate_Init();
-    UART_Receive_Handler();
+    UART_Receive_Handler(MOTOR_Parameters);
     rxlen = 0;                                                  // 清除数据长度计数
     HAL_UART_Receive_DMA(&huart1, UART1_RX_BUF, UART1_RX_SIZE); // 重新打开DMA接收
   }
@@ -213,7 +213,7 @@ void UART_Communicate_Init(void)
   }
 }
 
-void UART_Receive_Handler(void)
+void UART_Receive_Handler(Motor_Parameter *MOTOR_Parameters)
 {
   if (receiver[0] == Header && receiver[15] == Tail) // 0x53  0x45
   {
