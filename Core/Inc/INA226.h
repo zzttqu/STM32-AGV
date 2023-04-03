@@ -21,7 +21,9 @@
 #define ONFF_REG 0x06        // 屏蔽 使能 警报配置和转换准备就绪
 #define AL_REG 0x07          // 包含与所选警报功能相比较的限定值
 #define INA226_GET_ADDR 0XFF // 包含唯一的芯片标识号
-#define INA226_ADDR1 0x80
-#define INA226_ADDRESS 0x80 //INA地址
+
+
+void INA226_Init(uint16_t INA226_ADDR);
+int INA226_Get_AND_REPORT(Motor_Parameter data);
 
 #endif

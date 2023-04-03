@@ -83,7 +83,7 @@ int fputc(int ch, FILE *f)
 /**
  * 此延时函数代码适用于HAL库
  */
-static void delay_us(uint32_t delay)
+void delay_us(uint32_t delay)
 {
     int last, curr, val;
     int temp;
@@ -145,7 +145,9 @@ void HAL_SYSTICK_Callback(void)
   if (Sys_Count == 100) // 每0.1s传输一次速度数据 //编码器上限是32768
   {
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
+    //填写电机参数
     Get_Encoder();
+    Get_INA226();
     if (UART1_Report_Flag)
     {
       UART_Report_Handler(MOTOR_Parameters);

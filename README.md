@@ -33,5 +33,6 @@
 
 ## 电机电压电流测量
 1. ina226文档https://www.ti.com.cn/cn/lit/ds/symlink/ina226.pdf?ts=1680509642594&ref_url=https%253A%252F%252Fwww.ti.com.cn%252Fproduct%252Fcn%252FINA226%253Futm_source%253D360cn%2526utm_medium%253Dcpc%2526utm_campaign%253Dasc-null-null-gpn_cn_360test-cpc-pf-360cn-cn
+2. 上传的为short类型的以毫安和毫伏为单位的电流电压
 # 串口协议
 1. 接收的如果以A开头为配置，
