@@ -56,13 +56,13 @@ extern uint8_t reporter[];
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+static void delay_us(uint32_t delay);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-
+#define CPU_FREQUENCY_MHZ 132
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

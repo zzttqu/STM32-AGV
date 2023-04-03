@@ -2,7 +2,7 @@
  * @Author: zzttqu zzttqu@gamil.com
  * @Date: 2023-04-03 00:30:52
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 01:40:51
+ * @LastEditTime: 2023-04-03 16:31:18
  * @FilePath: \Graduation_Project\Core\Src\ds18b20.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,39 +12,6 @@
 
 #define CPU_FREQUENCY_MHZ 132 /* CPU主频，根据实际进行修改 */
 
-/**
- * 此延时函数代码适用于HAL库
- */
-static void delay_us(uint32_t delay)
-{
-    int last, curr, val;
-    int temp;
-
-    while (delay != 0)
-    {
-        temp = delay > 900 ? 900 : delay;
-        last = SysTick->VAL;
-        curr = last - CPU_FREQUENCY_MHZ * temp;
-        if (curr >= 0)
-        {
-            do
-            {
-                val = SysTick->VAL;
-            }
-            while ((val < last) && (val >= curr));
-        }
-        else
-        {
-            curr += CPU_FREQUENCY_MHZ * 1000;
-            do
-            {
-                val = SysTick->VAL;
-            }
-            while ((val <= last) || (val > curr));
-        }
-        delay -= temp;
-    }
-}
 
 /****************************************************************************
 函数名：DS18B20_IO_IN
