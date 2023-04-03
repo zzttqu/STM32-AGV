@@ -49,6 +49,7 @@
 
 /* USER CODE BEGIN PV */
 int Sys_Count = 0;
+short temp;
 extern uint8_t UART1_Speed_Flag;
 extern uint8_t UART1_Report_Flag;
 extern uint8_t UART1_Setting_Flag;
@@ -106,17 +107,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_SYSTICK_Callback(void)
 {
   Sys_Count++;
-  if (Sys_Count == 100) // 每0.1s传输一次速度数据
-                        //编码器上限是32768
+  if (Sys_Count == 100) // 每0.1s传输一次速度数据 //编码器上限是32768
   {
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
-    // printf("tim3 output is %d \r\n", (short)__HAL_TIM_GET_COUNTER(&htim3) / 4);
     Get_Encoder();
     if (UART1_Report_Flag)
     {
       UART_Report_Handler();
     }
     Sys_Count = 0;
+    temp=DS18B20_Get_Temperature();
+    printf("当前温度%0.2f \r\n",(float)temp/10);
   }
 }
 /* USER CODE END 0 */
@@ -187,10 +188,7 @@ int main(void)
       printf("ds18b20 init failed \r\n");
       HAL_Delay(1000);
     }
-    short temp;
-    temp=DS18B20_Get_Temperature();
-    printf("当前温度%0.2f \r\n",(float)temp/10);
-    HAL_Delay(1000);
+
     if (UART1_Speed_Flag == 1)
     {
       Change_Direction();

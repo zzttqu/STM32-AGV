@@ -11,4 +11,11 @@ typedef struct _Motor_Parameter_
   uart_Short encoder;
   TIM_HandleTypeDef htim_encoder;
   int8_t direction_Now;
+  uart_Short voltage;
+  uart_Short current;
+  uart_Short temperature;
 } Motor_Parameter;
+typedef struct _System_Status_
+{
+  uart_Short battery_temperature;
+} System_Status;

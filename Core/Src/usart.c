@@ -1,29 +1,29 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    usart.c
-  * @brief   This file provides code for the configuration
-  *          of the USART instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    usart.c
+ * @brief   This file provides code for the configuration
+ *          of the USART instances.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
 #include "motor.h"
-uint8_t speed_receiver[24];
-uint8_t speed_reporter[24];
+uint8_t receiver[24];
+uint8_t reporter[32];
 extern Motor_Parameter MOTOR_Parameters[];
 uint8_t UART1_RX_BUF[64];
 uint8_t UART1_Speed_Flag = 0;
@@ -64,18 +64,17 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
 }
 
-void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspInit 0 */
+    /* USER CODE BEGIN USART1_MspInit 0 */
 
-  /* USER CODE END USART1_MspInit 0 */
+    /* USER CODE END USART1_MspInit 0 */
     /* USART1 clock enable */
     __HAL_RCC_USART1_CLK_ENABLE();
 
@@ -84,7 +83,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PA9     ------> USART1_TX
     PA10     ------> USART1_RX
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
+    GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -108,7 +107,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart1_rx);
+    __HAL_LINKDMA(uartHandle, hdmarx, hdma_usart1_rx);
 
     /* USART1_TX Init */
     hdma_usart1_tx.Instance = DMA2_Stream7;
@@ -126,25 +125,25 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
+    __HAL_LINKDMA(uartHandle, hdmatx, hdma_usart1_tx);
 
     /* USART1 interrupt Init */
     HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspInit 1 */
+    /* USER CODE BEGIN USART1_MspInit 1 */
 
-  /* USER CODE END USART1_MspInit 1 */
+    /* USER CODE END USART1_MspInit 1 */
   }
 }
 
-void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle)
 {
 
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspDeInit 0 */
+    /* USER CODE BEGIN USART1_MspDeInit 0 */
 
-  /* USER CODE END USART1_MspDeInit 0 */
+    /* USER CODE END USART1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART1_CLK_DISABLE();
 
@@ -152,7 +151,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PA9     ------> USART1_TX
     PA10     ------> USART1_RX
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
 
     /* USART1 DMA DeInit */
     HAL_DMA_DeInit(uartHandle->hdmarx);
@@ -160,9 +159,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
     /* USART1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspDeInit 1 */
+    /* USER CODE BEGIN USART1_MspDeInit 1 */
 
-  /* USER CODE END USART1_MspDeInit 1 */
+    /* USER CODE END USART1_MspDeInit 1 */
   }
 }
 
@@ -171,7 +170,7 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 {
   if (huart == &huart1) // 判断是否为串口1产生中断
   {
-    memcpy(speed_receiver, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
+    memcpy(receiver, UART1_RX_BUF, rxlen); // 将UART1_RX_BUF的数据复制到UART1_RX_Data中，长度是rxlen
     UART_Communicate_Init();
     UART_Receive_Handler();
     rxlen = 0;                                                  // 清除数据长度计数
@@ -181,7 +180,7 @@ void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen)
 
 void UART_Communicate_Init(void)
 {
-    // 判断是否是初始化命令
+  // 判断是否是初始化命令
   if (UART1_RX_BUF[0] == 'A')
   {
     // 判断是否发送速度数据
@@ -216,81 +215,66 @@ void UART_Communicate_Init(void)
 
 void UART_Receive_Handler(void)
 {
-  if (speed_receiver[0] == Header && speed_receiver[15] == Tail) // 0x53  0x45
+  if (receiver[0] == Header && receiver[15] == Tail) // 0x53  0x45
   {
     uint8_t verify = 0x00;
     for (uint8_t i = 0; i < 14; i++)
     {
       // 第十四位是异或校验位
-      verify = speed_receiver[i] ^ verify;
+      verify = receiver[i] ^ verify;
     }
-    if (verify == speed_receiver[14])
+    if (verify == receiver[14])
     {
-      // 将数据切分后传入相应变量
-      for (uint8_t i = 2; i < 14; i++)
+      // 将数据传入相应变量
+      for (uint8_t i = 0; i < 12; i++)
       {
-        if (i < 4)
+        if (i < 8)
         {
-          MOTOR_Parameters[0].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
+          short motor_num = i / 2;
+          short byte_num = i % 2;
+          MOTOR_Parameters[motor_num].preloader.byte[byte_num] = receiver[i + 2];
         }
-        else if (3 < i && i < 6)
+        else
         {
-          MOTOR_Parameters[1].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
-        }
-        else if (5 < i && i < 8)
-        {
-          MOTOR_Parameters[2].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
-        }
-        else if (7 < i && i < 10)
-        {
-          MOTOR_Parameters[3].preloader.byte[(i % 2) ? 0 : 1] = speed_receiver[i];
-        }
-        else if (9 < i && i < 14)
-        {
-          MOTOR_Parameters[(i - 2) % 4].direction_Target = speed_receiver[i];
+          short motor_num = i - 8;
+          MOTOR_Parameters[motor_num].direction_Target = receiver[i + 2];
         }
       }
-      printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
-      memset(speed_receiver, 0x00, sizeof(speed_receiver));
+      // printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
+      memset(receiver, 0x00, sizeof(receiver));
       // 接收完数据标志位
       UART1_Speed_Flag = 1;
     }
   }
 }
 
-void UART_Report_Handler()
+void UART_Report_Handler(Motor_Parameter *MOTOR_Parameters)
 {
 
-  memset(speed_reporter, 0x00, sizeof(speed_reporter));
-  speed_reporter[0] = Header;
-  for (size_t i = 2; i < 10; i++)
+  memset(reporter, 0x00, sizeof(reporter));
+  reporter[0] = Header;
+  // 优化电机信息反馈，添加了电压和电流
+  for (size_t i = 0; i < 4; i++)
   {
-    if (i < 4)
-    {
-      speed_reporter[i] = MOTOR_Parameters[0].encoder.byte[(i - 2) % 2];
-    }
-    else if (3 < i && i < 6)
-    {
-      speed_reporter[i] = MOTOR_Parameters[1].encoder.byte[(i - 2) % 2];
-    }
-    else if (5 < i && i < 8)
-    {
-      speed_reporter[i] = MOTOR_Parameters[2].encoder.byte[(i - 2) % 2];
-    }
-    else if (7 < i && i < 10)
-    {
-      speed_reporter[i] = MOTOR_Parameters[3].encoder.byte[(i - 2) % 2];
-    }
+    size_t base_idx = i * 6 + 2;
+    uart_Short encoder = MOTOR_Parameters[i].encoder;
+    uart_Short votage = MOTOR_Parameters[i].voltage;
+    uart_Short current = MOTOR_Parameters[i].current;
+    memcpy(reporter + base_idx, &encoder, sizeof(encoder.byte));
+    memcpy(reporter + base_idx + 2, &votage, sizeof(encoder.byte));
+    memcpy(reporter + base_idx + 4, &current, sizeof(encoder.byte));
   }
-  for (size_t i = 0; i < 10; i++)
+  // 3*6+2+4占用了24位
+  uint8_t xor_check = 0;
+  for (size_t i = 0; i < 25; i++)
   {
     // 第十四位是异或校验位
-    speed_reporter[10] = speed_reporter[i] ^ speed_reporter[10];
+    xor_check ^= reporter[i];
   }
+  reporter[25] = xor_check;
+  reporter[26] = Tail;
 
-  speed_reporter[11] = Tail;
-  
-  HAL_UART_Transmit_DMA(&huart1, speed_reporter, sizeof(speed_reporter));
+  HAL_UART_Transmit_DMA(&huart1, reporter, sizeof(reporter));
 }
 
 /* USER CODE END 1 */
