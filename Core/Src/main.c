@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dma.h"
+#include "i2c.h"
 #include "iwdg.h"
 #include "tim.h"
 #include "usart.h"
@@ -161,6 +162,7 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM14_Init();
   MX_IWDG_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
   uint8_t activate_text[] = "MCU Activated";

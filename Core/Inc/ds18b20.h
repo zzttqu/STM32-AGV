@@ -2,9 +2,10 @@
  * @Author: zzttqu zzttqu@gamil.com
  * @Date: 2023-04-03 00:28:36
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 01:34:22
- * @FilePath: \Graduation_Project\Core\Inc\DS18B0.h
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ * @LastEditTime: 2023-04-03 14:47:31
+ * @FilePath: \Graduation_Project\Core\Inc\ds18b20.h
+ * @Description: 
+ * 一个大学生的毕业设计
  */
 #ifndef DS18B20_H__
 #define DS18B20_H__
