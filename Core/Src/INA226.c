@@ -37,7 +37,7 @@ int INA226_Get_AND_REPORT(Motor_Parameter data)
     bus_voltage = bus_voltage_raw * 1.25; // 单位是mV
     current = current_raw * 0.5;          // 单位是mA
     power = current * bus_voltage;
-    data.current.i_data = current;
-    data.voltage.i_data = bus_voltage;
+    data.current = current;
+    data.voltage = bus_voltage;
     return 1;
 }

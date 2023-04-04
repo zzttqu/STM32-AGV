@@ -147,7 +147,7 @@ void HAL_SYSTICK_Callback(void)
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
     //填写电机参数
     Get_Encoder();
-    Get_INA226();
+    //Get_INA226();
     if (UART1_Report_Flag)
     {
       UART_Report_Handler(MOTOR_Parameters);
@@ -197,8 +197,8 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM8_Init();
   MX_TIM14_Init();
-  MX_IWDG_Init();
   MX_I2C1_Init();
+  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
   uint8_t activate_text[] = "MCU Activated";
@@ -221,11 +221,11 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (DS18B20_Init())
+ /*    if (DS18B20_Init())
     {
       printf("ds18b20 init failed \r\n");
       HAL_Delay(1000);
-    }
+    } */
 
     if (UART1_Speed_Flag == 1)
     {

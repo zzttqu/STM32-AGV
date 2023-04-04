@@ -2,7 +2,7 @@
  * @Author: zzttqu zzttqu@gamil.com
  * @Date: 2023-04-03 00:30:52
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 16:31:18
+ * @LastEditTime: 2023-04-04 15:32:16
  * @FilePath: \Graduation_Project\Core\Src\ds18b20.c
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,6 @@
 #include "tim.h"
 #include "main.h"
 
-#define CPU_FREQUENCY_MHZ 132 /* CPU主频，根据实际进行修改 */
 
 
 /****************************************************************************
@@ -184,13 +183,13 @@ uint8_t DS18B20_Read_Byte(void)
 返回值：无
 备  注：
 ***************************************************************************/
-void DS18B20_Start(void){
-	DS18B20_Rst();
-	DS18B20_Check();
-	DS18B20_Write_Byte(0xcc);//跳过ROM
-	DS18B20_Write_Byte(0x44);//温度变换命令
+void DS18B20_Start(void)
+{
+    DS18B20_Rst();
+    DS18B20_Check();
+    DS18B20_Write_Byte(0xcc); // 跳过ROM
+    DS18B20_Write_Byte(0x44); // 温度变换命令
 }
-
 
 /***************************************************************************
 函数名：DS18B20_Init
@@ -200,17 +199,18 @@ void DS18B20_Start(void){
 返回值：无
 备  注：
 ***************************************************************************/
-uint8_t DS18B20_Init(void){
-	//引脚初始化
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.Pin = GPIO_PIN_5;
-	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStructure.Pull = GPIO_PULLUP;
-	GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOA,&GPIO_InitStructure);
-	
-	DS18B20_Rst();
-	return DS18B20_Check();
+uint8_t DS18B20_Init(void)
+{
+    // 引脚初始化
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.Pin = GPIO_PIN_5;
+    GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStructure.Pull = GPIO_PULLUP;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+    DS18B20_Rst();
+    return DS18B20_Check();
 }
 
 /***************************************************************************
@@ -221,33 +221,36 @@ uint8_t DS18B20_Init(void){
 返回值：读取到的温度数据
 备  注：适用于总线上只有一个DS18B20的情况
 ***************************************************************************/
-short DS18B20_Get_Temperature(void){
-	uint8_t temp;
-	uint8_t TL,TH;
-	short temperature;
-	
-	DS18B20_Start();
-	DS18B20_Rst();
-	DS18B20_Check();
-  DS18B20_Write_Byte(0xcc);//跳过ROM
-	DS18B20_Write_Byte(0xbe);//读暂存器
-	TL = DS18B20_Read_Byte();//低八位
-	TH = DS18B20_Read_Byte();//高八位
-	
-	//判断温度值是否为负数
-	if(TH>0x70){
-		TH = ~TH;
-		TL = ~TL;
-		temp = 0;
-	}else
-		temp = 1;
-	
-	temperature = TH;
-	temperature <<= 8;
-	temperature += TL;
-	temperature = (float)temperature*0.625;
-	if(temperature)
-		return temperature;
-	else
-		return -temperature;
+short DS18B20_Get_Temperature(void)
+{
+    uint8_t temp;
+    uint8_t TL, TH;
+    short temperature;
+
+    DS18B20_Start();
+    DS18B20_Rst();
+    DS18B20_Check();
+    DS18B20_Write_Byte(0xcc); // 跳过ROM
+    DS18B20_Write_Byte(0xbe); // 读暂存器
+    TL = DS18B20_Read_Byte(); // 低八位
+    TH = DS18B20_Read_Byte(); // 高八位
+
+    // 判断温度值是否为负数
+    if (TH > 0x70)
+    {
+        TH = ~TH;
+        TL = ~TL;
+        temp = 0;
+    }
+    else
+        temp = 1;
+
+    temperature = TH;
+    temperature <<= 8;
+    temperature += TL;
+    temperature = (float)temperature * 0.625;
+    if (temperature)
+        return temperature;
+    else
+        return -temperature;
 }

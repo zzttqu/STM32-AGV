@@ -62,7 +62,7 @@ void delay_us(uint32_t delay);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-#define CPU_FREQUENCY_MHZ 132
+#define CPU_FREQUENCY_MHZ 168
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
