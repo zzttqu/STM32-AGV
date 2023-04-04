@@ -64,18 +64,17 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
 }
 
-void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle)
 {
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspInit 0 */
+    /* USER CODE BEGIN USART1_MspInit 0 */
 
-  /* USER CODE END USART1_MspInit 0 */
+    /* USER CODE END USART1_MspInit 0 */
     /* USART1 clock enable */
     __HAL_RCC_USART1_CLK_ENABLE();
 
@@ -84,7 +83,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PA9     ------> USART1_TX
     PA10     ------> USART1_RX
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
+    GPIO_InitStruct.Pin = GPIO_PIN_9 | GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -108,7 +107,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmarx,hdma_usart1_rx);
+    __HAL_LINKDMA(uartHandle, hdmarx, hdma_usart1_rx);
 
     /* USART1_TX Init */
     hdma_usart1_tx.Instance = DMA2_Stream7;
@@ -126,25 +125,25 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
       Error_Handler();
     }
 
-    __HAL_LINKDMA(uartHandle,hdmatx,hdma_usart1_tx);
+    __HAL_LINKDMA(uartHandle, hdmatx, hdma_usart1_tx);
 
     /* USART1 interrupt Init */
     HAL_NVIC_SetPriority(USART1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspInit 1 */
+    /* USER CODE BEGIN USART1_MspInit 1 */
 
-  /* USER CODE END USART1_MspInit 1 */
+    /* USER CODE END USART1_MspInit 1 */
   }
 }
 
-void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
+void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle)
 {
 
-  if(uartHandle->Instance==USART1)
+  if (uartHandle->Instance == USART1)
   {
-  /* USER CODE BEGIN USART1_MspDeInit 0 */
+    /* USER CODE BEGIN USART1_MspDeInit 0 */
 
-  /* USER CODE END USART1_MspDeInit 0 */
+    /* USER CODE END USART1_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART1_CLK_DISABLE();
 
@@ -152,7 +151,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PA9     ------> USART1_TX
     PA10     ------> USART1_RX
     */
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9|GPIO_PIN_10);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_9 | GPIO_PIN_10);
 
     /* USART1 DMA DeInit */
     HAL_DMA_DeInit(uartHandle->hdmarx);
@@ -160,9 +159,9 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
     /* USART1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
-  /* USER CODE BEGIN USART1_MspDeInit 1 */
+    /* USER CODE BEGIN USART1_MspDeInit 1 */
 
-  /* USER CODE END USART1_MspDeInit 1 */
+    /* USER CODE END USART1_MspDeInit 1 */
   }
 }
 
@@ -219,27 +218,19 @@ void UART_Receive_Handler(Motor_Parameter *MOTOR_Parameters)
   if (receiver[0] == Header && receiver[15] == Tail) // 0x53  0x45
   {
     uint8_t verify = 0x00;
-    for (uint8_t i = 0; i < 14; i++)
+    for (uint8_t i = 0; i < 30; i++)
     {
       // 第十四位是异或校验位
       verify = receiver[i] ^ verify;
     }
-    if (verify == receiver[14])
+    if (verify == receiver[30])
     {
       // 将数据传入相应变量
-      for (uint8_t i = 0; i < 12; i++)
+      for (uint8_t i = 0; i < 4; i++)
       {
-        if (i < 8)
-        {
-          short motor_num = i / 2;
-          short byte_num = i % 2;
-          MOTOR_Parameters[motor_num].preloader.byte[byte_num] = receiver[i + 2];
-        }
-        else
-        {
-          short motor_num = i - 8;
-          MOTOR_Parameters[motor_num].direction_Target = receiver[i + 2];
-        }
+        uint8_t base_idx = i * 4 + 2;
+        memcpy(&MOTOR_Parameters[i].preloader, receiver + base_idx, sizeof(MOTOR_Parameters[i].preloader));
+        memcpy(&MOTOR_Parameters[i].direction_Target, receiver + base_idx + 2, sizeof(MOTOR_Parameters[i].direction_Target));
       }
       // printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
       memset(receiver, 0x00, sizeof(receiver));
@@ -258,22 +249,22 @@ void UART_Report_Handler(Motor_Parameter *MOTOR_Parameters)
   for (size_t i = 0; i < 4; i++)
   {
     size_t base_idx = i * 6 + 2;
-    uart_Short encoder = MOTOR_Parameters[i].encoder;
-    uart_Short votage = MOTOR_Parameters[i].voltage;
-    uart_Short current = MOTOR_Parameters[i].current;
-    memcpy(reporter + base_idx, &encoder, sizeof(encoder.byte));
-    memcpy(reporter + base_idx + 2, &votage, sizeof(encoder.byte));
-    memcpy(reporter + base_idx + 4, &current, sizeof(encoder.byte));
+    short encoder = MOTOR_Parameters[i].encoder;
+    short voltage = MOTOR_Parameters[i].voltage;
+    short current = MOTOR_Parameters[i].current;
+    memcpy(reporter + base_idx, &encoder, sizeof(encoder));
+    memcpy(reporter + base_idx + 2, &voltage, sizeof(encoder));
+    memcpy(reporter + base_idx + 4, &current, sizeof(encoder));
   }
   // 3*6+2+4占用了24位
   uint8_t xor_check = 0;
-  for (size_t i = 0; i < 25; i++)
+  for (size_t i = 0; i < 30; i++)
   {
     // 第十四位是异或校验位
     xor_check ^= reporter[i];
   }
-  reporter[25] = xor_check;
-  reporter[26] = Tail;
+  reporter[30] = xor_check;
+  reporter[31] = Tail;
 
   HAL_UART_Transmit_DMA(&huart1, reporter, sizeof(reporter));
 }

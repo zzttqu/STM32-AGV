@@ -3,3 +3,5 @@ Drivers
 MDK-ARM/*
 .vscode
 !MDK-ARM/*.uvprojx
+test.c
+test.exe

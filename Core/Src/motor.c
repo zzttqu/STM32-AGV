@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 20:07:02
+ * @LastEditTime: 2023-04-04 14:17:05
  * @FilePath: \Graduation_Project\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -73,18 +73,18 @@ void Change_Speed()
   for (uint8_t i = 0; i < 4; i++)
   {
     // 脉冲太长就直接停定时器了
-    if (MOTOR_Parameters[i].preloader.i_data > 10000)
+    if (MOTOR_Parameters[i].preloader > 10000)
     {
       HAL_TIM_Base_Stop_IT(&MOTOR_Parameters[i].htim_speed);
     }
     else
     { // 不能太短了
-      if (MOTOR_Parameters[i].preloader.i_data < 100)
+      if (MOTOR_Parameters[i].preloader < 100)
       {
-        MOTOR_Parameters[i].preloader.i_data = 100;
+        MOTOR_Parameters[i].preloader = 100;
       }
       // 修改定时器
-      __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader.i_data);
+      __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader);
       Motor_Start_Flag = 1;
       HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);
     }
@@ -112,17 +112,17 @@ void Get_Encoder()
       MOTOR_Parameters[i].direction_Now = -__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder);
       // 取定时器的数值，想了想还是强制转换吧，毕竟改成了100ms就采集一次不会太大
       // 加了division之后应该不用除以4了
-      MOTOR_Parameters[i].encoder.i_data = -(short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+      MOTOR_Parameters[i].encoder = -(short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
 
-      // MOTOR_Parameters[i].encoder.i_data = -(short)(MOTOR_Parameters[i].encoder.i_data);
+      // MOTOR_Parameters[i].encoder = -(short)(MOTOR_Parameters[i].encoder);
     }
     else
     {
       // 取是正转还是反转（已经废弃）?
       MOTOR_Parameters[i].direction_Now = (__HAL_TIM_IS_TIM_COUNTING_DOWN(&MOTOR_Parameters[i].htim_encoder));
       // 取定时器的数值，想了想还是强制转换吧，毕竟改成了50ms就采集一次不会太大
-      MOTOR_Parameters[i].encoder.i_data = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
-      // MOTOR_Parameters[i].encoder.i_data = (short)(MOTOR_Parameters[i].encoder.i_data);
+      MOTOR_Parameters[i].encoder = (short)__HAL_TIM_GET_COUNTER(&MOTOR_Parameters[i].htim_encoder);
+      // MOTOR_Parameters[i].encoder = (short)(MOTOR_Parameters[i].encoder);
     }
   }
 
