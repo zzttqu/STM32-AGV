@@ -84,33 +84,31 @@ int fputc(int ch, FILE *f)
  */
 void delay_us(uint32_t delay)
 {
-    int last, curr, val;
-    int temp;
+  int last, curr, val;
+  int temp;
 
-    while (delay != 0)
+  while (delay != 0)
+  {
+    temp = delay > 900 ? 900 : delay;
+    last = SysTick->VAL;
+    curr = last - CPU_FREQUENCY_MHZ * temp;
+    if (curr >= 0)
     {
-        temp = delay > 900 ? 900 : delay;
-        last = SysTick->VAL;
-        curr = last - CPU_FREQUENCY_MHZ * temp;
-        if (curr >= 0)
-        {
-            do
-            {
-                val = SysTick->VAL;
-            }
-            while ((val < last) && (val >= curr));
-        }
-        else
-        {
-            curr += CPU_FREQUENCY_MHZ * 1000;
-            do
-            {
-                val = SysTick->VAL;
-            }
-            while ((val <= last) || (val > curr));
-        }
-        delay -= temp;
+      do
+      {
+        val = SysTick->VAL;
+      } while ((val < last) && (val >= curr));
     }
+    else
+    {
+      curr += CPU_FREQUENCY_MHZ * 1000;
+      do
+      {
+        val = SysTick->VAL;
+      } while ((val <= last) || (val > curr));
+    }
+    delay -= temp;
+  }
 }
 
 /**
@@ -144,24 +142,25 @@ void HAL_SYSTICK_Callback(void)
   if (Sys_Count == 100) // 每0.1s传输一次速度数据 //编码器上限是32768
   {
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
-    //填写电机参数
+    // 填写电机参数
     Get_Encoder();
-    Get_INA226();
+    // Get_INA226();
+    // printf("%d,%d",MOTOR_Parameters[0].current,MOTOR_Parameters[0].voltage);
     if (UART1_Report_Flag)
     {
       UART_Report_Handler(MOTOR_Parameters);
     }
     Sys_Count = 0;
-    temp=DS18B20_Get_Temperature();
-    printf("当前温度%0.2f \r\n",(float)temp/10);
+    // temp=DS18B20_Get_Temperature();
+    // printf("当前温度%0.2f \r\n",(float)temp/10);
   }
 }
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -208,9 +207,9 @@ int main(void)
   // 使能idle中断
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 初始化电机定时器参数
-  
+
   Motor_Init();
-  //Motor_Start();
+  // Motor_Start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -220,12 +219,27 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
- /*    if (DS18B20_Init())
-    {
-      printf("ds18b20 init failed \r\n");
-      HAL_Delay(1000);
-    } */
-
+    /*    if (DS18B20_Init())
+       {
+         printf("ds18b20 init failed \r\n");
+         HAL_Delay(1000);
+       } */
+    uint8_t a[2], b[2], c[2];
+    uint8_t ee=0x04;
+    uint16_t config = 0x4527;
+    uint16_t cal = 0x0A00;
+    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&config, 2, 10000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&cal, 2, 10000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x01, I2C_MEMADD_SIZE_8BIT, a, 2, 10000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x04, I2C_MEMADD_SIZE_8BIT, b, 2, 10000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, c, 2, 10000);
+    //HAL_I2C_Master_Transmit(&hi2c1,0x45<<1,&ee,1,100);
+    //HAL_I2C_Master_Receive(&hi2c1,0x45<<1,a,2,100);
+    uint16_t yy = a[0] << 8 | a[1];
+    uint16_t ww = b[0] << 8 | b[1];
+    uint16_t zz = c[0] << 8 | c[1];
+    printf("shut%f mV current%d bus%d \r\n", yy*2.5/1000, ww, zz);
+    HAL_Delay(1000);
     if (UART1_Speed_Flag == 1)
     {
       Change_Direction();
@@ -235,31 +249,31 @@ int main(void)
     // 喂看门狗
     if (UART1_Setting_Flag || UART1_Speed_Flag)
     {
-      //HAL_IWDG_Refresh(&hiwdg);
+      // HAL_IWDG_Refresh(&hiwdg);
     }
     // TODO 这段看门狗需要删除，实际使用不能一直喂看门狗
-    //HAL_IWDG_Refresh(&hiwdg);
+    // HAL_IWDG_Refresh(&hiwdg);
   }
   /* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
+ * @brief System Clock Configuration
+ * @retval None
+ */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-  */
+   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
+   * in the RCC_OscInitTypeDef structure.
+   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -275,9 +289,8 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+   */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -294,9 +307,9 @@ void SystemClock_Config(void)
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -308,14 +321,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
+ * @brief  Reports the name of the source file and the source line number
+ *         where the assert_param error has occurred.
+ * @param  file: pointer to the source file name
+ * @param  line: assert_param error line source number
+ * @retval None
+ */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
