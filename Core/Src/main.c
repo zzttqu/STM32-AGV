@@ -227,9 +227,11 @@ int main(void)
     uint8_t a[2], b[2], c[2];
     uint8_t ee=0x04;
     uint16_t config = 0x4527;
+    uint8_t con[2]={0x45,0x27};
+    uint8_t call[2]={0x0A,0x00};
     uint16_t cal = 0x0A00;
-    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&config, 2, 10000);
-    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&cal, 2, 10000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 10000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, call, 2, 10000);
     HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x01, I2C_MEMADD_SIZE_8BIT, a, 2, 10000);
     HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x04, I2C_MEMADD_SIZE_8BIT, b, 2, 10000);
     HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, c, 2, 10000);
