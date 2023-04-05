@@ -20,7 +20,6 @@
 #include "main.h"
 #include "dma.h"
 #include "i2c.h"
-#include "iwdg.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -147,7 +146,7 @@ void HAL_SYSTICK_Callback(void)
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
     //填写电机参数
     Get_Encoder();
-    //Get_INA226();
+    Get_INA226();
     if (UART1_Report_Flag)
     {
       UART_Report_Handler(MOTOR_Parameters);
@@ -198,7 +197,6 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM14_Init();
   MX_I2C1_Init();
-  MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
   // 用哪个串口，发什么东西，东西长度多少，超时多少ms
   uint8_t activate_text[] = "MCU Activated";
@@ -210,6 +208,7 @@ int main(void)
   // 使能idle中断
   __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
   // 初始化电机定时器参数
+  
   Motor_Init();
   //Motor_Start();
   /* USER CODE END 2 */
@@ -236,10 +235,10 @@ int main(void)
     // 喂看门狗
     if (UART1_Setting_Flag || UART1_Speed_Flag)
     {
-      HAL_IWDG_Refresh(&hiwdg);
+      //HAL_IWDG_Refresh(&hiwdg);
     }
     // TODO 这段看门狗需要删除，实际使用不能一直喂看门狗
-    HAL_IWDG_Refresh(&hiwdg);
+    //HAL_IWDG_Refresh(&hiwdg);
   }
   /* USER CODE END 3 */
 }
@@ -261,10 +260,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;

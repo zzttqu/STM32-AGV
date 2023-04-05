@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-04 14:17:05
+ * @LastEditTime: 2023-04-04 21:39:37
  * @FilePath: \Graduation_Project\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -18,6 +18,7 @@ uint8_t direction_Flag = 0;
 extern uint8_t Motor_Start_Flag;
 void Motor_Init()
 {
+  //设置定时器
   MOTOR_Parameters[0].htim_speed = htim11;
   MOTOR_Parameters[0].htim_encoder = htim1;
   MOTOR_Parameters[1].htim_speed = htim12;
@@ -26,6 +27,16 @@ void Motor_Init()
   MOTOR_Parameters[2].htim_encoder = htim4;
   MOTOR_Parameters[3].htim_speed = htim14;
   MOTOR_Parameters[3].htim_encoder = htim8;
+  //设置i2c地址
+  MOTOR_Parameters[0].INA226_ADDR=0x80<<1;
+  MOTOR_Parameters[1].INA226_ADDR=0x81<<1;
+  MOTOR_Parameters[2].INA226_ADDR=0x82<<1;
+  MOTOR_Parameters[3].INA226_ADDR=0x83<<1;
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    INA226_Init(MOTOR_Parameters[i].INA226_ADDR);
+  }
+  
 }
 void Motor_Start()
 {

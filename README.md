@@ -15,14 +15,14 @@
 # IO手册
 ## 普通输出引脚
 1. 1电机的脉冲引脚为C5，正反转引脚为B0
-2. 2电机的脉冲引脚为F7，正反转引脚为F6
+2. 2电机的脉冲引脚为F6，正反转引脚为F7
 3. 3电机的脉冲引脚为B12，正反转引脚为B13
 4. 4电机的脉冲引脚为F5，正反转引脚为D11
 ## 定时器输入引脚
-5. 1电机编码器tim2，PA15连接A相，PB3连接B相。
+5. 1电机编码器tim1，PE9连接A相，PE11连接B相。
 6. 2电机编码器tim3，PA6连接A相，PA7连接B相。
-7. 3电机编码器tim4，PB6连接A相，PB7连接B相。
-8. 4电机编码器tim5，PA0连接A相，PA1连接B相。
+7. 3电机编码器tim4，PD12连接A相，PD13连接B相。
+8. 4电机编码器tim8，PC6连接A相，PC7连接B相。
 ## 脉冲定时器
 1. 1电机的脉冲定时器为TIM11
 2. 2电机的脉冲定时器为TIM12
@@ -30,7 +30,14 @@
 4. 4电机的脉冲定时器为TIM14
 ## 温度引脚
 1. cubemx设置为输出拉高，目前使用PB1
-
+## I2C
+目前使用i2c 1号控制器，SDA引脚为PB7，SDL引脚为PB6
+## 电磁锁IO
+1. PE2，PE3
+## 电推杆IO
+1. PC2，PC3，PC4，PD3
+## 温度IO
+1. PB1
 ## 电机电压电流测量
 1. ina226文档https://www.ti.com.cn/cn/lit/ds/symlink/ina226.pdf?ts=1680509642594&ref_url=https%253A%252F%252Fwww.ti.com.cn%252Fproduct%252Fcn%252FINA226%253Futm_source%253D360cn%2526utm_medium%253Dcpc%2526utm_campaign%253Dasc-null-null-gpn_cn_360test-cpc-pf-360cn-cn
 2. 上传的为short类型的以毫安和毫伏为单位的电流电压
