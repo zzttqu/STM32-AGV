@@ -2,7 +2,7 @@
  * @Author: zzttqu zzttqu@gamil.com
  * @Date: 2023-04-03 16:04:52
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 20:05:44
+ * @LastEditTime: 2023-04-14 19:58:43
  * @FilePath: \Graduation_Project\Core\Src\INA226.c
  * @Description:
  * 一个大学生的毕业设计
@@ -17,8 +17,8 @@ void INA226_Init(uint16_t INA226_ADDR)
 {
     // 设置转换时间588us,求平均值次数128，
     // 采样时间为588*128,75ms采集一次数据，设置模式为分流和总线连续模式
-    uint16_t config = 0x48df;
-    uint16_t cal = 0x0400;
+    uint8_t config[] = {0x48,0xdf};
+    uint8_t cal[] = {0x04,0x00};
     HAL_I2C_Mem_Write(&hi2c1, INA226_ADDR, CFG_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&config, 2, 100);
     // CAL在current_lsb为0.5uA，电阻为0.01欧的时候为1024
     HAL_I2C_Mem_Write(&hi2c1, INA226_ADDR, CAL_REG, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&cal, 2, 100); // 设置分流电压转电流转换参数

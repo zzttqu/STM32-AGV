@@ -28,10 +28,10 @@ void Motor_Init()
   MOTOR_Parameters[3].htim_speed = htim14;
   MOTOR_Parameters[3].htim_encoder = htim8;
   // 设置i2c地址
-  MOTOR_Parameters[0].INA226_ADDR = 0x80 << 1;
-  MOTOR_Parameters[1].INA226_ADDR = 0x81 << 1;
-  MOTOR_Parameters[2].INA226_ADDR = 0x82 << 1;
-  MOTOR_Parameters[3].INA226_ADDR = 0x83 << 1;
+  MOTOR_Parameters[0].INA226_ADDR = 0x40 << 1;
+  MOTOR_Parameters[1].INA226_ADDR = 0x41 << 1;
+  MOTOR_Parameters[2].INA226_ADDR = 0x42 << 1;
+  MOTOR_Parameters[3].INA226_ADDR = 0x43 << 1;
   for (uint8_t i = 0; i < 4; i++)
   {
     INA226_Init(MOTOR_Parameters[i].INA226_ADDR);
