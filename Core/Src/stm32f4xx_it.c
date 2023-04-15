@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "usart.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -41,7 +42,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-
+extern uint8_t UART1_RX_BUF[];//串口接收缓存
+uint8_t UART1_RX_LEN;//接收到的数据量
+extern uint8_t receiver[];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -231,7 +234,14 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-
+  if (__HAL_UART_GET_FLAG(&huart1,UART_FLAG_IDLE)!=RESET)
+  {
+    __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+    HAL_UART_DMAStop(&huart1);
+    UART1_RX_LEN=UART1_RX_SIZE-__HAL_DMA_GET_COUNTER(&hdma_usart1_rx);//计算接收到的数据长度
+    USAR_UART_IDLECallback(&huart1,UART1_RX_LEN);
+  }
+  
   /* USER CODE END USART1_IRQn 1 */
 }
 

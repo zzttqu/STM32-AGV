@@ -211,7 +211,7 @@ int main(void)
   // 初始化电机定时器参数
 
   Motor_Init();
-  // Motor_Start();
+  //Motor_Start();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -226,24 +226,28 @@ int main(void)
          printf("ds18b20 init failed \r\n");
          HAL_Delay(1000);
        } */
-    uint8_t a[2], b[2], c[2];
-    uint8_t ee=0x04;
-    uint16_t config = 0x4527;
+    /* uint8_t a[5][2];
     uint8_t con[2]={0x45,0x27};
     uint8_t call[2]={0x0A,0x00};
     uint16_t cal = 0x0A00;
-    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 10000);
-    HAL_I2C_Mem_Write(&hi2c1, 0x45 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, call, 2, 10000);
-    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x01, I2C_MEMADD_SIZE_8BIT, a, 2, 10000);
-    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x04, I2C_MEMADD_SIZE_8BIT, b, 2, 10000);
-    HAL_I2C_Mem_Read(&hi2c1, 0x45 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, c, 2, 10000);
-    //HAL_I2C_Master_Transmit(&hi2c1,0x45<<1,&ee,1,100);
-    //HAL_I2C_Master_Receive(&hi2c1,0x45<<1,a,2,100);
-    uint16_t yy = a[0] << 8 | a[1];
-    uint16_t ww = b[0] << 8 | b[1];
-    uint16_t zz = c[0] << 8 | c[1];
-    printf("shut%f mV current%f mA bus%f V \r\n", yy*2.5/1000, ww*0.02, zz*1.25/1000);
-    HAL_Delay(1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x40 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x41 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x42 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x43 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x44 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
+    HAL_I2C_Mem_Write(&hi2c1, 0x40 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, call, 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x40 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[0], 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x41 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[1], 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x42 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[2], 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x43 << 1, 0xFF, I2C_MEMADD_SIZE_8BIT, a[3], 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x44 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[4], 2, 1000);
+    uint16_t yy = a[0][0] << 8 | a[0][1];
+    uint16_t ww = a[1][0] << 8 | a[1][1];
+    uint16_t zz = a[2][0] << 8 | a[2][1];
+    uint16_t xx = a[3][0] << 8 | a[3][1];
+    uint16_t ss = a[4][0] << 8 | a[4][1];
+    printf("%f %f %f %hx %f\r\n", yy*1.25/1000,ww*1.25/1000,zz*1.25/1000,xx,ss*1.25/1000);
+    HAL_Delay(1000); */
     if (UART1_Speed_Flag == 1)
     {
       Change_Direction();
