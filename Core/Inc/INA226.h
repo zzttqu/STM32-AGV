@@ -2,7 +2,7 @@
  * @Author: zzttqu zzttqu@gamil.com
  * @Date: 2023-04-03 15:49:06
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-03 18:17:22
+ * @LastEditTime: 2023-04-15 22:15:43
  * @FilePath: \Graduation_Project\Core\Inc\INA226.h
  * @Description:
  * 一个大学生的毕业设计
@@ -23,7 +23,7 @@
 #define INA226_GET_ADDR 0XFF // 包含唯一的芯片标识号
 
 
-void INA226_Init(uint16_t INA226_ADDR);
-int INA226_Get_AND_REPORT(Motor_Parameter data);
+void INA226_Init(uint8_t INA226_ADDR);
+int INA226_Get_AND_REPORT(Motor_Parameter* data);
 
 #endif

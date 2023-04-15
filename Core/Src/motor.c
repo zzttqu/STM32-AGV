@@ -2,7 +2,7 @@
  * @Author: zzttqu
  * @Date: 2023-02-22 23:38:44
  * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-15 17:25:50
+ * @LastEditTime: 2023-04-15 22:33:35
  * @FilePath: \Graduation_Project\Core\Src\motor.c
  * @Description: 一个大学生的毕业设计
  * Copyright  2023 by ${git_name} email: ${git_email}, All Rights Reserved.
@@ -31,11 +31,11 @@ void Motor_Init()
   MOTOR_Parameters[0].INA226_ADDR = 0x40 << 1;
   MOTOR_Parameters[1].INA226_ADDR = 0x41 << 1;
   MOTOR_Parameters[2].INA226_ADDR = 0x42 << 1;
-  MOTOR_Parameters[3].INA226_ADDR = 0x43 << 1;
-/*   for (uint8_t i = 0; i < 4; i++)
+  MOTOR_Parameters[3].INA226_ADDR = 0x40 << 1;// todo 这里由于4号pcb有问题就取1号的了 
+  for (uint8_t i = 0; i < 4; i++)
   {
     INA226_Init(MOTOR_Parameters[i].INA226_ADDR);
-  } */
+  }
 }
 void Motor_Start()
 {
@@ -163,6 +163,7 @@ void Get_INA226()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
-    INA226_Get_AND_REPORT(MOTOR_Parameters[i]);
+    //必须使用指针传入，要不然就会出现复制一份，没有修改原来的
+    INA226_Get_AND_REPORT(&MOTOR_Parameters[i]);
   }
 }

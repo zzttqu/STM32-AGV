@@ -145,8 +145,8 @@ void HAL_SYSTICK_Callback(void)
     HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
     // 填写电机参数
     Get_Encoder();
-    // Get_INA226();
-    // printf("%d,%d",MOTOR_Parameters[0].current,MOTOR_Parameters[0].voltage);
+    Get_INA226();
+    //printf("%d,%d",MOTOR_Parameters[0].current,MOTOR_Parameters[0].voltage);
     if (UART1_Report_Flag)
     {
       UART_Report_Handler(MOTOR_Parameters);
@@ -226,7 +226,7 @@ int main(void)
          printf("ds18b20 init failed \r\n");
          HAL_Delay(1000);
        } */
-    /* uint8_t a[5][2];
+/*     uint8_t a[5][2];
     uint8_t con[2]={0x45,0x27};
     uint8_t call[2]={0x0A,0x00};
     uint16_t cal = 0x0A00;
@@ -236,7 +236,7 @@ int main(void)
     HAL_I2C_Mem_Write(&hi2c1, 0x43 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
     HAL_I2C_Mem_Write(&hi2c1, 0x44 << 1, CFG_REG, I2C_MEMADD_SIZE_8BIT, con, 2, 1000);
     HAL_I2C_Mem_Write(&hi2c1, 0x40 << 1, CAL_REG, I2C_MEMADD_SIZE_8BIT, call, 2, 1000);
-    HAL_I2C_Mem_Read(&hi2c1, 0x40 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[0], 2, 1000);
+    HAL_I2C_Mem_Read(&hi2c1, 0x40 << 1, BV_REG, I2C_MEMADD_SIZE_8BIT, a[0], 2, 1000);
     HAL_I2C_Mem_Read(&hi2c1, 0x41 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[1], 2, 1000);
     HAL_I2C_Mem_Read(&hi2c1, 0x42 << 1, 0x02, I2C_MEMADD_SIZE_8BIT, a[2], 2, 1000);
     HAL_I2C_Mem_Read(&hi2c1, 0x43 << 1, 0xFF, I2C_MEMADD_SIZE_8BIT, a[3], 2, 1000);

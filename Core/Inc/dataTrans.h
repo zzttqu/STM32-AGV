@@ -16,7 +16,7 @@ typedef struct _Motor_Parameter_
   short encoder;
   TIM_HandleTypeDef htim_encoder;
   int8_t direction_Now;
-  uint16_t INA226_ADDR;
+  uint8_t INA226_ADDR;
   short voltage;
   short current;
   short temperature;
