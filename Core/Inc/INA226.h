@@ -13,7 +13,7 @@
 #include "i2c.h"
 
 #define CFG_REG 0x00         //
-#define SV_REG 0x01          // 分流电压， 此处分流电阻为 0.1欧
+#define SV_REG 0x01          // 分流电压， 此处分流电阻为 0.01欧
 #define BV_REG 0x02          // 总线电压
 #define PWR_REG 0x03         // 电源功率
 #define CUR_REG 0x04         // 电流

@@ -12,7 +12,7 @@ typedef struct _Motor_Parameter_
 {
   short preloader;
   TIM_HandleTypeDef htim_speed;
-  int8_t direction_Target;
+  short direction_Target;
   short encoder;
   TIM_HandleTypeDef htim_encoder;
   int8_t direction_Now;

@@ -51,9 +51,9 @@ void Motor_Start();
 
 void Motor_Stop();
 
-void Change_Speed();
+short Change_Speed();
 
-void Change_Direction();
+short Change_Direction();
 
 void Get_Encoder();
 void Get_INA226();

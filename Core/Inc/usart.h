@@ -1,12 +1,3 @@
-/*
- * @Author: zzttqu zzttqu@gamil.com
- * @Date: 2023-03-30 22:08:50
- * @LastEditors: zzttqu zzttqu@gamil.com
- * @LastEditTime: 2023-04-15 21:07:20
- * @FilePath: \Graduation_Project\Core\Inc\usart.h
- * @Description: 
- * 一个大学生的毕业设计
- */
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
@@ -63,7 +54,6 @@ void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void USAR_UART_IDLECallback(UART_HandleTypeDef *huart, uint8_t rxlen);
-short XYZ_Target_Speed_transition(uint8_t High, uint8_t Low);
 void UART_Receive_Handler(Motor_Parameter* MOTOR_Parameters);
 void UART_Report_Handler(Motor_Parameter* MOTOR_Parameters);
 void UART_Communicate_Init(void);

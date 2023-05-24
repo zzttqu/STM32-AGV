@@ -19,7 +19,7 @@ extern uint8_t Motor_Start_Flag;
 void Motor_Init()
 {
   // 设置定时器
-  MOTOR_Parameters[0].htim_speed = htim11;
+  MOTOR_Parameters[0].htim_speed = htim7;
   MOTOR_Parameters[0].htim_encoder = htim1;
   MOTOR_Parameters[1].htim_speed = htim12;
   MOTOR_Parameters[1].htim_encoder = htim3;
@@ -31,19 +31,21 @@ void Motor_Init()
   MOTOR_Parameters[0].INA226_ADDR = 0x40 << 1;
   MOTOR_Parameters[1].INA226_ADDR = 0x41 << 1;
   MOTOR_Parameters[2].INA226_ADDR = 0x42 << 1;
-  MOTOR_Parameters[3].INA226_ADDR = 0x40 << 1;// todo 这里由于4号pcb有问题就取1号的了 
-  for (uint8_t i = 0; i < 4; i++)
+  MOTOR_Parameters[3].INA226_ADDR = 0x40 << 1; // todo 这里由于4号pcb有问题就取1号的了
+/*   for (uint8_t i = 0; i < 4; i++)
   {
     INA226_Init(MOTOR_Parameters[i].INA226_ADDR);
-  }
+  } */
 }
 void Motor_Start()
 {
   // 使用it表示有中断回调，但是编码器不需要回调，只要定时读取就行，就不用带it后缀的了。
   for (uint8_t i = 0; i < 4; i++)
   {
-    // 开启脉冲定时器
+    // 不开启脉冲定时器，如果开启会导致一开机就开始动
     HAL_TIM_Base_Start_IT(&MOTOR_Parameters[i].htim_speed);
+    // 设置一个超过10000的保证不会动
+    __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, 499);
     // 开启编码器计时器
     HAL_TIM_Encoder_Start(&MOTOR_Parameters[i].htim_encoder, TIM_CHANNEL_ALL);
   }
@@ -65,21 +67,20 @@ void Motor_Stop()
   }
 }
 
-void Change_Direction()
+short Change_Direction()
 {
   // 修改轮子方向
   (MOTOR_Parameters[0].direction_Target > 0) ? MOTOR1_FORWARD : MOTOR1_BACKWARD;
   (MOTOR_Parameters[1].direction_Target > 0) ? MOTOR2_FORWARD : MOTOR2_BACKWARD;
   (MOTOR_Parameters[2].direction_Target > 0) ? MOTOR3_FORWARD : MOTOR3_BACKWARD;
   (MOTOR_Parameters[3].direction_Target > 0) ? MOTOR4_FORWARD : MOTOR4_BACKWARD;
+  return 1;
 }
 
-void Change_Speed()
+short Change_Speed()
 {
-  MOTOR1_STOP;
-  MOTOR2_STOP;
-  MOTOR3_STOP;
-  MOTOR4_STOP;
+      printf("修改的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader, MOTOR_Parameters[1].preloader, MOTOR_Parameters[2].preloader, MOTOR_Parameters[3].preloader);
+
   for (uint8_t i = 0; i < 4; i++)
   {
     // 脉冲太长就直接停定时器了
@@ -89,9 +90,9 @@ void Change_Speed()
     }
     else
     { // 不能太短了
-      if (MOTOR_Parameters[i].preloader < 100)
+      if (MOTOR_Parameters[i].preloader < 199)
       {
-        MOTOR_Parameters[i].preloader = 100;
+        MOTOR_Parameters[i].preloader = 199;
       }
       // 修改定时器
       __HAL_TIM_SET_AUTORELOAD(&MOTOR_Parameters[i].htim_speed, MOTOR_Parameters[i].preloader);
@@ -109,6 +110,8 @@ void Change_Speed()
     __HAL_TIM_SET_AUTORELOAD(&htim7, MOTORB.target);
     __HAL_TIM_SET_AUTORELOAD(&htim8, MOTORC.target);
     __HAL_TIM_SET_AUTORELOAD(&htim1, MOTORD.target); */
+    //加入回调函数防止跑飞
+    return 1;
 }
 
 void Get_Encoder()
@@ -163,7 +166,7 @@ void Get_INA226()
 {
   for (uint8_t i = 0; i < 4; i++)
   {
-    //必须使用指针传入，要不然就会出现复制一份，没有修改原来的
+    // 必须使用指针传入，要不然就会出现复制一份，没有修改原来的
     INA226_Get_AND_REPORT(&MOTOR_Parameters[i]);
   }
 }

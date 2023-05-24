@@ -215,7 +215,7 @@ void UART_Communicate_Init(void)
 
 void UART_Receive_Handler(Motor_Parameter *MOTOR_Parameters)
 {
-  if (receiver[0] == Header && receiver[15] == Tail) // 0x53  0x45
+  if (receiver[0] == Header && receiver[31] == Tail) // 0x53  0x45
   {
     uint8_t verify = 0x00;
     for (uint8_t i = 0; i < 30; i++)
@@ -229,13 +229,14 @@ void UART_Receive_Handler(Motor_Parameter *MOTOR_Parameters)
       for (uint8_t i = 0; i < 4; i++)
       {
         uint8_t base_idx = i * 4 + 2;
-        memcpy(receiver + base_idx, &MOTOR_Parameters[i].preloader, sizeof(MOTOR_Parameters[i].preloader));
-        memcpy(receiver + base_idx + 2, &MOTOR_Parameters[i].direction_Target, sizeof(MOTOR_Parameters[i].direction_Target));
+        memcpy(&MOTOR_Parameters[i].preloader, receiver + base_idx, sizeof(MOTOR_Parameters[i].preloader));
+        memcpy(&MOTOR_Parameters[i].direction_Target, receiver + base_idx + 2, sizeof(MOTOR_Parameters[i].direction_Target));
       }
-      // printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader.i_data, MOTOR_Parameters[1].preloader.i_data, MOTOR_Parameters[2].preloader.i_data, MOTOR_Parameters[3].preloader.i_data);
+      printf("收到的速度%d %d %d %d \r\n", MOTOR_Parameters[0].preloader, MOTOR_Parameters[1].preloader, MOTOR_Parameters[2].preloader, MOTOR_Parameters[3].preloader);
       memset(receiver, 0x00, sizeof(receiver));
       // 接收完数据标志位
       UART1_Speed_Flag = 1;
+      printf("标志位为%d",UART1_Speed_Flag);
     }
   }
 }
